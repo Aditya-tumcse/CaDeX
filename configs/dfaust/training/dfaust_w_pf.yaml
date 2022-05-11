@@ -85,7 +85,7 @@ training:
       lr_min: 0.00000001
 
   total_epoch: 200000
-  batch_size: 16
+  batch_size: 8
 
 evaluation:
   eval_every_epoch: 3

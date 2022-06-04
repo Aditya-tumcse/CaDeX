@@ -46,7 +46,7 @@ dataset:
 
     # path: resource/data/Humans_multi
     # path: /tmp/leijh/Humans_multi
-    path: resource/data/Humans
+    path: /usr/stud/srinivaa/code/CaDeX/resource/data/Humans
 
     dataset: Humans
     input_type: pcl_seq

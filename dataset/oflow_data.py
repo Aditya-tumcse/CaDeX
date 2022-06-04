@@ -6,10 +6,16 @@ import logging
 
 
 class Dataset(Dataset):
+    """
+    Custom made dataset class
+    """
     def __init__(self, cfg, mode) -> None:
+        """
+        Method to instantiate the dataset object.
+        """
         super().__init__()
-        self.dataset = get_dataset(mode, cfg)
-        self.mode = mode.lower()
+        self.dataset = get_dataset(mode, cfg) #Get the dataset pertaining to the mode
+        self.mode = mode.lower() 
         self.dataset_proportion = cfg["dataset"]["dataset_proportion"][
             cfg["modes"].index(self.mode)
         ]
@@ -45,9 +51,15 @@ class Dataset(Dataset):
             self.n_training_frames = -1
 
     def __len__(self) -> int:
+        """
+        Method to return the size of the dataset
+        """
         return len(self.dataset)
 
     def __getitem__(self, index: int):
+        """
+        Method to return the data at the index.
+        """
         data = self.dataset.__getitem__(index)
         meta_info = self.dataset.models[index]
         viz_id = "{}_".format(index)
@@ -76,10 +88,10 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
         cfg (dict): config dictionary
         return_idx (bool): whether to include an ID field
     """
-    method = cfg["method"]
-    dataset_type = cfg["dataset"]["oflow_config"]["dataset"]
-    dataset_folder = cfg["dataset"]["oflow_config"]["path"]
-    categories = cfg["dataset"]["oflow_config"]["classes"]
+    method = cfg["method"] # Probably the neural network model to be used
+    dataset_type = cfg["dataset"]["oflow_config"]["dataset"] #Dataset type. For D-FAUST its Humans
+    dataset_folder = cfg["dataset"]["oflow_config"]["path"] # Path to the Humans folder
+    categories = cfg["dataset"]["oflow_config"]["classes"] #Categories in Human daaset. Here only 1 category - D-FAUST
 
     # Get split
     splits = {
@@ -92,7 +104,7 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
     if dataset_type == "Humans":
         # Dataset fields
         # Method specific fields (usually correspond to output)
-        fields = get_data_fields(mode, cfg)
+        fields = get_data_fields(mode, cfg) #fields = {'points':,'points_t':,'pointcloud':,'oflow_idx':}
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)
         if inputs_field is not None:

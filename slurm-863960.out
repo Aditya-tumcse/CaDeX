@@ -1,0 +1,137 @@
+
+Please check the configuration
+
+{'dataset': {'dataset_name': 'oflow_data',
+             'dataset_proportion': [1.0, 1.0],
+             'dataset_root': 'resource/data/XXXX',
+             'indices': {'test_index': 'None',
+                         'train_index': 'None',
+                         'val_index': 'None'},
+             'n_query_sample_eval': 10000,
+             'n_training_frames': 8,
+             'num_workers': 16,
+             'oflow_config': {'classes': ['Surreal5k'],
+                              'dataset': 'Humans',
+                              'dim': 3,
+                              'generation_interpolate': False,
+                              'img_augment': False,
+                              'img_seq_folder': 'img',
+                              'img_size': 224,
+                              'img_with_camera': False,
+                              'input_pointcloud_corresponding': True,
+                              'input_pointcloud_n': 300,
+                              'input_pointcloud_noise': 0.001,
+                              'input_type': 'pcl_seq',
+                              'length_sequence': 17,
+                              'mesh_seq_folder': 'mesh_seq',
+                              'n_files_per_sequence': -1,
+                              'n_training_pcl_points': 100,
+                              'n_training_points': 512,
+                              'n_views': 24,
+                              'offset_sequence': 15,
+                              'path': '/usr/stud/srinivaa/code/CaDeX/resource/data/Surreal5k',
+                              'pointcloud_seq_folder': 'pcl_seq',
+                              'points_file': 'points.npz',
+                              'points_iou_seq_folder': 'points_seq',
+                              'points_unpackbits': True,
+                              'test_split': 'test',
+                              'train_split': 'train',
+                              'training_all_steps': False,
+                              'training_multi_files': False,
+                              'val_split': 'val'},
+             'pin_mem': False,
+             'ram_cache': False,
+             'use_dataset': True},
+ 'evaluation': {'batch_size': 4,
+                'eval_every_epoch': 3,
+                'iou_threshold': 0.3,
+                'project_to_final_mesh': False},
+ 'generation': {'occ_if_meshing_cfg': {'batch_pts': 8000,
+                                       'refinement_step': 0,
+                                       'resolution_0': 32,
+                                       'simplify_nfaces': 5000,
+                                       'threshold': 0.3,
+                                       'upsampling_steps': 2,
+                                       'use_sampling': False}},
+ 'gpu': '0,1',
+ 'logging': {'backup_files': ['run.py'],
+             'checkpoint_epoch': 20,
+             'debug_mode': False,
+             'log_dir': 'cadex_dfaust_w_pf',
+             'loggers': ['mesh',
+                         'image',
+                         'hist',
+                         'video',
+                         'xls',
+                         'checkpoint',
+                         'metric'],
+             'mesh_viz_interval': 3,
+             'model_select_larger': True,
+             'model_select_metric': 'iou',
+             'viz_epoch_interval': 1,
+             'viz_nontrain_batch_interval': 50,
+             'viz_one_per_batch': True,
+             'viz_training_batch_interval': 800},
+ 'method': 'CaDeX-PF-DFAU',
+ 'model': {'canonical_geometry_decoder': {'c_dim': 128, 'hidden_size': 128},
+           'canonical_geometry_encoder': {'c_dim': 128, 'hidden_dim': 128},
+           'compress_cdc': True,
+           'homeomorphism_decoder': {'block_normalize': True,
+                                     'code_proj_hidden_size': [128, 128, 128],
+                                     'feature_dims': 128,
+                                     'hidden_size': [128, 64, 32, 32, 32],
+                                     'n_layers': 6,
+                                     'normalization': False,
+                                     'proj_dims': 128,
+                                     'proj_type': 'simple'},
+           'homeomorphism_encoder': {'c_dim': 128, 'hidden_dim': 128},
+           'loss_corr': True,
+           'loss_recon': True,
+           'model_name': 'cadex_dfaust',
+           't_perm_inv': True},
+ 'modes': ['train', 'val'],
+ 'rand_seed': 12345,
+ 'resume': 'None',
+ 'root': '/usr/stud/srinivaa/code/CaDeX',
+ 'runner': 'solver',
+ 'training': {'batch_size': 8,
+              'clear_phase_cache': False,
+              'grad_clip': 4.0,
+              'initialize_network_file': [],
+              'initialize_network_name': [],
+              'loss_clip': -1.0,
+              'optim': {'all': {'decay_factor': [0.3, 0.3, 0.3],
+                                'decay_schedule': [200, 300, 400],
+                                'lr': 0.0001,
+                                'lr_min': 1e-08}},
+              'total_epoch': 200000}}
+
+y/n?y Warning, NO INTERACTIVE CONFIRM!
+
+Warning! No resume but log dir: /usr/stud/srinivaa/code/CaDeX/log/cadex_dfaust_w_pf exists. Remove the old dir? y/n
+y Warning, NO INTERACTIVE CONFIRMATION, RENAME OLD LOG DIR!
+Log dir confirmed...
+Error processing line 1 of /usr/stud/srinivaa/anaconda3/envs/cadex/lib/python3.7/site-packages/distutils-precedence.pth:
+
+  Traceback (most recent call last):
+    File "/usr/stud/srinivaa/anaconda3/envs/cadex/lib/python3.7/site.py", line 168, in addpackage
+      exec(line)
+    File "<string>", line 1, in <module>
+  ModuleNotFoundError: No module named '_distutils_hack'
+
+Remainder of file ignored
+| CaDeX-PF-DFAU | INFO | 2022Jun01-14:20:29 | Set GPU: 0,1 ...
+| CaDeX-PF-DFAU | INFO | 2022Jun01-14:20:29 | Save configuration to local file...
+Traceback (most recent call last):
+  File "/usr/stud/srinivaa/code/CaDeX/run.py", line 22, in <module>
+    datasets_dict[mode] = DatasetClass(cfg, mode=mode)
+  File "/usr/stud/srinivaa/code/CaDeX/dataset/oflow_data.py", line 11, in __init__
+    self.dataset = get_dataset(mode, cfg)
+  File "/usr/stud/srinivaa/code/CaDeX/dataset/oflow_data.py", line 125, in get_dataset
+    ex_folder_name=cfg["dataset"]["oflow_config"]["pointcloud_seq_folder"],
+  File "/usr/stud/srinivaa/code/CaDeX/dataset/oflow_dataset/subseq_dataset.py", line 79, in __init__
+    models_len = self.get_models_seq_len(subpath, models_c)
+  File "/usr/stud/srinivaa/code/CaDeX/dataset/oflow_dataset/subseq_dataset.py", line 162, in get_models_seq_len
+    f for f in os.listdir(os.path.join(subpath, m, ex_folder_name)) if "_" not in f
+FileNotFoundError: [Errno 2] No such file or directory: '/usr/stud/srinivaa/code/CaDeX/resource/data/Surreal5k/Surreal5k/pcl_seq/pcl_seq'
+srun: error: node6: task 0: Exited with exit code 1

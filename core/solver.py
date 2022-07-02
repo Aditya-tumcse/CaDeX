@@ -36,7 +36,8 @@ class Solver(object):
                 batch_size=bs,
                 shuffle=shuffle_dataset,
                 num_workers=n_workers,
-                pin_memory=cfg["dataset"]["pin_mem"],
+                pin_memory=cfg["dataset"]["pin_mem"], #set to true to ensure faster data transfer between CPU and GPU. Set it to false only if the data 
+                #directly transferred into GPU and it is really small
                 drop_last=mode == "train",  # ! check this
             )
         self.model = model
@@ -65,7 +66,7 @@ class Solver(object):
                 cfg["training"]["initialize_network_file"],
                 cfg["training"]["initialize_network_name"],
             )
-        self.model.to_gpus()
+        self.model.to_gpus() #Transfer the model to the GPU
 
         # control viz in model and logger
         log_config = self.cfg["logging"]
@@ -113,7 +114,7 @@ class Solver(object):
                     torch.cuda.empty_cache()
                 if mode.lower() != "train" and self.current_epoch % self.eval_every_epoch != 0:
                     continue  # for val and test, skip if not meets eval epoch interval
-                batch_total_num = len(self.dataloader_dict[mode])
+                batch_total_num = len(self.dataloader_dict[mode]) #Length of dataloader --> Number of batches in an epoch
                 self.batch_in_epoch_count = 0
                 for batch in iter(self.dataloader_dict[mode]):
                     self.batch_in_epoch_count += 1

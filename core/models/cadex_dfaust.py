@@ -209,6 +209,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         self.t_perm_inv = cfg["model"]["t_perm_inv"]
         if self.t_perm_inv:
+            #homeomorphism encoder is the deformation encoder
             homeomorphism_encoder = ResnetPointnet(dim=3, **cfg["model"]["homeomorphism_encoder"])
         else:
             homeomorphism_encoder = SpatioTemporalResnetPointnetCDC(
@@ -227,7 +228,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         self.network_dict = torch.nn.ModuleDict(
             {
-                "homeomorphism_encoder": homeomorphism_encoder,
+                "homeomorphism_encoder": homeomorphism_encoder, #deformation encoder
                 "canonical_geometry_encoder": ResnetPointnet(
                     dim=3, **cfg["model"]["canonical_geometry_encoder"]
                 ),
@@ -266,6 +267,17 @@ class CaDeX_DFAU(torch.nn.Module):
         return -torch.log((1 / (x + eps)) - 1)
 
     def map2canonical(self, code, query, return_uncompressed=False):
+        """
+        This method is used to tranform the points from query space to canonical space. 
+
+
+        Args:
+        code : Deformation embeddings for a query space
+        query : The points in the query space
+
+        Returns:
+        out : Coordinates of the points in the canonical space
+        """
         # code: B,C,T, query: B,T,N,3
         # B1, M1, _ = F.shape # batch, templates, C
         # B2, _, M2, D = x.shape # batch, Npts, templates, 3
@@ -304,13 +316,13 @@ class CaDeX_DFAU(torch.nn.Module):
         # encode Hoemo condition
         if self.t_perm_inv:
             c_t = self.network_dict["homeomorphism_encoder"](seq_pc.reshape(B * T, -1, 3))
-            c_t = c_t.reshape(B, T, -1)
+            c_t = c_t.reshape(B, T, -1) #Deformation embedding for a query space
         else:
             _, c_t = self.network_dict["homeomorphism_encoder"](seq_pc)  # B,C; B,T,C
 
         # tranform observation to CDC and encode canonical geometry
-        inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs"])  # B,T,N,3
-        c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3))
+        inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
+        c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
 
         # visualize
         if viz_flag:
@@ -338,11 +350,12 @@ class CaDeX_DFAU(torch.nn.Module):
         cdc, uncompressed_cdc = self.map2canonical(
             c_homeomorphism, input_pack["points"], return_uncompressed=True
         )  # B,T,N,3
+        
         shift = (uncompressed_cdc - input_pack["points"]).norm(dim=3)
 
         # reconstruct in canonical space
-        pr = self.decode_by_cdc(observation_c=c_g, query=cdc)
-        occ_hat = pr.probs
+        pr = self.decode_by_cdc(observation_c=c_g, query=cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
+        occ_hat = pr.probs #occupancy field in canonical space
         reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
             occ_hat, input_pack["points.occ"], reduction="none"
         )
@@ -386,6 +399,16 @@ class CaDeX_DFAU(torch.nn.Module):
         return output
 
     def decode_by_cdc(self, observation_c, query):
+        """
+        The function uses OccNet to reconstruct the canonical shape in canonical deformaton coordinate space.
+
+        Args:
+        observayion_c : The embedding from PointNet in canonical deformation coordinate space
+        query : The query points in a query position
+
+        Returns:
+        Occupancy probabilities 
+        """
         B, T, N, _ = query.shape
         query = query.reshape(B, -1, 3)
         logits = self.network_dict["canonical_geometry_decoder"](

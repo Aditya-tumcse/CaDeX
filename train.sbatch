@@ -9,4 +9,4 @@
 
 module load cuda/11.0
 cd /usr/stud/srinivaa/code/CaDeX
-srun -u /usr/stud/srinivaa/anaconda3/envs/cadex/bin/python3 /usr/stud/srinivaa/code/CaDeX/run.py --config /usr/stud/srinivaa/code/CaDeX/configs/surreal5k/training/surreal5k.yaml -f
+srun -u /usr/stud/srinivaa/anaconda3/envs/cadex/bin/python3 /usr/stud/srinivaa/code/CaDeX/run.py --config /usr/stud/srinivaa/code/CaDeX/configs/dfaust/training/dfaust_w_pf.yaml -f

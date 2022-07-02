@@ -14,7 +14,7 @@ class Dataset(Dataset):
         Method to instantiate the dataset object.
         """
         super().__init__()
-        self.dataset = get_dataset(mode, cfg) #Get the dataset pertaining to the mode
+        self.dataset = get_dataset(mode, cfg) #Get the dataset pertaining to the mode. Get the entire data pertaining to the mode.
         self.mode = mode.lower() 
         self.dataset_proportion = cfg["dataset"]["dataset_proportion"][
             cfg["modes"].index(self.mode)

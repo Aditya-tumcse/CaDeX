@@ -66,7 +66,7 @@ class ModelBase(object):
         data, meta_info = batch
         for k in data.keys():
             if isinstance(data[k], torch.Tensor):
-                data[k] = data[k].cuda().float()
+                data[k] = data[k].cuda().float() #Send the batch of data into GPU
         data["phase"] = meta_info["mode"][0]
         data["viz_flag"] = viz_flag
         batch = {"model_input": data, "meta_info": meta_info}
@@ -110,7 +110,7 @@ class ModelBase(object):
         return batch
 
     def train_batch(self, batch, viz_flag=False):
-        batch = self._preprocess(batch, viz_flag)
+        batch = self._preprocess(batch, viz_flag) #Preprocess the batch of training data
         self.set_train()
         self.zero_grad()
         batch = self._predict(batch, viz_flag)

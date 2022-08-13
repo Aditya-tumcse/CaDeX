@@ -39,7 +39,7 @@ class Dataset(Dataset):
                 mode, self.dataset_proportion * 100, len(self.dataset)
             )
         )
-        seq_len_train = cfg["dataset"]["oflow_config"]["length_sequence"]
+        seq_len_train = cfg["dataset"]["oflow_config"]["length_sequence"] #17
         if "length_sequence_val" in cfg["dataset"]["oflow_config"].keys():
             seq_len_val = cfg["dataset"]["oflow_config"]["length_sequence_val"]
         else:
@@ -107,6 +107,8 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
         fields = get_data_fields(mode, cfg) #fields = {'points':,'points_t':,'pointcloud':,'oflow_idx':}
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)
+
+        #until now fields dict contains only the keys mentioned above i.e. points, points_t, pointcloud and oflow_idx. We now add new keys to the dictionary
         if inputs_field is not None:
             fields["inputs"] = inputs_field
 
@@ -155,11 +157,11 @@ def get_data_fields(mode, cfg):
         seq_len_val = cfg["dataset"]["oflow_config"]["length_sequence_val"]
     else:
         seq_len_val = seq_len_train
-    p_folder = cfg["dataset"]["oflow_config"]["points_iou_seq_folder"]
-    pcl_folder = cfg["dataset"]["oflow_config"]["pointcloud_seq_folder"]
-    mesh_folder = cfg["dataset"]["oflow_config"]["mesh_seq_folder"]
-    generate_interpolate = cfg["dataset"]["oflow_config"]["generation_interpolate"]
-    unpackbits = cfg["dataset"]["oflow_config"]["points_unpackbits"]
+    p_folder = cfg["dataset"]["oflow_config"]["points_iou_seq_folder"] # points_seq: contains information regarding the points and their corresponding occupancy values
+    pcl_folder = cfg["dataset"]["oflow_config"]["pointcloud_seq_folder"] #pcl_seq : contains information regarding the points, scale and loc
+    mesh_folder = cfg["dataset"]["oflow_config"]["mesh_seq_folder"] #mesh_seq: non-existent
+    generate_interpolate = cfg["dataset"]["oflow_config"]["generation_interpolate"] #False
+    unpackbits = cfg["dataset"]["oflow_config"]["points_unpackbits"] # True
     if "training_all_steps" in cfg["dataset"]["oflow_config"].keys():
         training_all = cfg["dataset"]["oflow_config"]["training_all_steps"]
     else:

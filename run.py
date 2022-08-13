@@ -18,7 +18,7 @@ setup_seed(cfg["rand_seed"])
 DatasetClass = get_dataset(cfg)
 
 datasets_dict = dict()
-for mode in cfg["modes"]:
+for mode in cfg["modes"]: #mode = ['train','val']
     datasets_dict[mode] = DatasetClass(cfg, mode=mode)
 
 ModelClass = get_model(cfg["model"]["model_name"])

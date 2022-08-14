@@ -219,6 +219,10 @@ def get_data_fields(mode, cfg):
                 not_choose_last=not_choose_last,
                 use_multi_files=training_multi_files,
             )
+
+            fields["mesh"] = oflow_dataset.MeshSubseqField(
+            mesh_folder, seq_len=seq_len_val, file_ext="ply"
+        )
     # only training can be boost by multi-files
     # modify here, if not train, val should also load the same as the test
     else:

@@ -159,7 +159,7 @@ def get_data_fields(mode, cfg):
         seq_len_val = seq_len_train
     p_folder = cfg["dataset"]["oflow_config"]["points_iou_seq_folder"] # points_seq: contains information regarding the points and their corresponding occupancy values
     pcl_folder = cfg["dataset"]["oflow_config"]["pointcloud_seq_folder"] #pcl_seq : contains information regarding the points, scale and loc
-    mesh_folder = cfg["dataset"]["oflow_config"]["mesh_seq_folder"] #mesh_seq: non-existent
+    mesh_folder = cfg["dataset"]["oflow_config"]["mesh_seq_folder"] #mesh_seq: non-existent. Utilize this to have a file containing points and faces for each model.
     generate_interpolate = cfg["dataset"]["oflow_config"]["generation_interpolate"] #False
     unpackbits = cfg["dataset"]["oflow_config"]["points_unpackbits"] # True
     if "training_all_steps" in cfg["dataset"]["oflow_config"].keys():
@@ -177,6 +177,8 @@ def get_data_fields(mode, cfg):
     # Fields
     pts_iou_field = oflow_dataset.PointsSubseqField
     pts_corr_field = oflow_dataset.PointCloudSubseqField
+
+    # MeshSubseqField can be used to load mesh fields
 
     if "not_choose_last" in cfg["dataset"].keys():
         not_choose_last = cfg["dataset"]["not_choose_last"]

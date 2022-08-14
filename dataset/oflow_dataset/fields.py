@@ -7,6 +7,7 @@ from torchvision import transforms
 import trimesh
 from .core import Field
 import torch
+import open3d as o3d
 from .transforms import SubsamplePointcloudSeq
 
 
@@ -654,6 +655,16 @@ class MeshSubseqField(Field):
                 vertices.append(np.array(mesh.vertices, dtype=np.float32))
 
         faces = np.array(trimesh.load(mesh_files[0], process=False).faces, dtype=np.float32)
-        data = {"vertices": np.stack(vertices), "faces": faces}
+        self.data = {"vertices": np.stack(vertices), "faces": faces} # self.data to be used for quadric decimation
 
-        return data
+        return self.data
+
+    def quadric_decimation(self, N = 512):
+        o3d_mesh = o3d.geometry.TriangleMesh()
+        o3d_mesh.vertices = o3d.utility.Vector3dVector(self.data['vertices'])
+        o3d_mesh.triangles = o3d.utility.Vector3iVector(self.data['faces'])
+
+        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(N)
+
+        return decimated_mesh
+

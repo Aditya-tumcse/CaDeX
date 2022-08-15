@@ -214,10 +214,32 @@ class SubsamplePointsSeq(object):
         return data_out
 
 class DownSampleMesh(object):
+    """
+    Class to downsample mesh using quadric decimation using open3d module
+
+    Args:
+    -----
+    N : int
+        Number of target triangles obtained after downsampling the mesh
+
+    Returns:
+    --------
+    decimated_mesh : open3d.geometry.TriangleMesh
+                    Final downsampled mesh
+    """
     def __init__(self,N):
         self.N = N
 
     def __call__(self, data):
+        """
+        The method calls the transformation class
+
+        Args:
+        -----
+        data : Python dictionary
+               Contains vertices and triangles as the keys 
+        """
+
         o3d_mesh = o3d.geometry.TriangleMesh()
         o3d_mesh.vertices = o3d.utility.Vector3dVector(data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
         o3d_mesh.triangles = o3d.utility.Vector3iVector(data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
@@ -228,10 +250,34 @@ class DownSampleMesh(object):
 
 
 class MeshNoise(object):
+    """
+    The class is used to add noise to the mesh.
+
+    Args:
+    -----
+    stddev : float
+            A random number between 0 and 1
+    
+    Returns:
+    --------
+    data_out : Python dictionary
+               Python dictionary containing vertices and triangles after the noise is added
+    mesh_data : open3d.geometry.TriangleMesh
+                Mesh after the noise is added
+    """
+
     def __init__(self):
         self.stddev = np.random.random()
     
     def __call__(self, data):
+        """
+        The method calls the transformation class
+
+        Args:
+        -----
+        data : Python dictionary
+               Python dictionary containing vertices and triangles before the noise is added
+        """
         data_out = data.copy()
         points = data['vertices']
         noise = self.stddev * np.ones(data_out.shape)

@@ -682,15 +682,7 @@ class MeshField(Field):
 
         faces = np.load(mesh_files[0])['triangles']
 
-        self.data = {"vertices":np.stack(vertices),"triangles":faces}
+        data = {"vertices":np.stack(vertices),"triangles":faces}
 
-        return self.data
+        return data
 
-    def quadric_decimation(self):
-        o3d_mesh = o3d.geometry.TriangleMesh()
-        o3d_mesh.vertices = o3d.utility.Vector3dVector(self.data['vertices'])
-        o3d_mesh.triangles = o3d.utility.Vector3iVector(self.data['triangles'])
-
-        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
-
-        return decimated_mesh

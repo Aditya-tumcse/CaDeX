@@ -221,8 +221,7 @@ def get_data_fields(mode, cfg):
             )
 
             fields["mesh"] = oflow_dataset.MeshField(
-            mesh_folder, seq_len=seq_len_val
-        )
+            mesh_folder, seq_len=seq_len_val)
     # only training can be boost by multi-files
     # modify here, if not train, val should also load the same as the test
     else:

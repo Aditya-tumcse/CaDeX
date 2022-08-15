@@ -655,16 +655,41 @@ class MeshSubseqField(Field):
                 vertices.append(np.array(mesh.vertices, dtype=np.float32))
 
         faces = np.array(trimesh.load(mesh_files[0], process=False).faces, dtype=np.float32)
-        self.data = {"vertices": np.stack(vertices), "faces": faces} # self.data to be used for quadric decimation
+        data = {"vertices": np.stack(vertices), "faces": faces}
+
+        return data
+
+    
+
+
+class MeshField(Field):
+    def __init__(self, folder_name, seq_len=17,file_ext="npz"):
+        self.folder_name = folder_name
+        self.seq_len = seq_len
+        self.file_ext = file_ext
+
+    def load(self, model_path, idx, c_idx=None, start_idx=0):
+        folder = os.path.join(model_path, self.folder_name)
+        mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
+        mesh_files.sort()
+        mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
+
+        vertices = []
+        for mesh_p in mesh_files:
+            points = np.load(mesh_p)['points']
+            vertices.append(points)
+
+        faces = np.load(mesh_files[0])['triangles']
+
+        self.data = {"vertices":np.stack(vertices),"triangles":faces}
 
         return self.data
 
     def quadric_decimation(self, N = 512):
         o3d_mesh = o3d.geometry.TriangleMesh()
         o3d_mesh.vertices = o3d.utility.Vector3dVector(self.data['vertices'])
-        o3d_mesh.triangles = o3d.utility.Vector3iVector(self.data['faces'])
+        o3d_mesh.triangles = o3d.utility.Vector3iVector(self.data['triangles'])
 
         decimated_mesh = o3d_mesh.simplify_quadric_Decimation(N)
 
         return decimated_mesh
-

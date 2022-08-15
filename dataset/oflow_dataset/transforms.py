@@ -1,5 +1,5 @@
 import numpy as np
-
+import open3d as o3d
 
 # Transforms
 class PointcloudNoise(object):
@@ -212,3 +212,33 @@ class SubsamplePointsSeq(object):
             help_arr = np.arange(n_steps).reshape(-1, 1)
             data_out.update({None: points[help_arr, indices, :], "occ": occ[help_arr, indices, :]})
         return data_out
+
+class DownSampleMesh(object):
+    def __init__(self,N):
+        self.N = N
+
+    def __call__(self, data):
+        o3d_mesh = o3d.geometry.TriangleMesh()
+        o3d_mesh.vertices = o3d.utility.Vector3dVector(data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
+        o3d_mesh.triangles = o3d.utility.Vector3iVector(data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
+
+        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
+
+        return decimated_mesh
+
+
+class MeshNoise(object):
+    def __init__(self):
+        self.stddev = np.random.random()
+    
+    def __call__(self, data):
+        data_out = data.copy()
+        points = data['vertices']
+        noise = self.stddev * np.ones(data_out.shape)
+        data_out["vertices"] = points + noise
+
+        mesh_data = o3d.geometry.TriangleMesh()
+        mesh_data.vertices = o3d.utility.Vector3dVector(data_out["vertices"])
+        mesh_data.triangles = o3d.utility.Vector3iVector(data_out["triangless"])
+
+        return data_out, mesh_data

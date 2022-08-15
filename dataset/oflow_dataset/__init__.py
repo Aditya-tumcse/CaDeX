@@ -7,6 +7,7 @@ from .fields import (
     ImageSubseqField,
     PointCloudSubseqField,
     MeshSubseqField,
+    MeshField,
 )
 
 from .transforms import (
@@ -33,6 +34,7 @@ __all__ = [
     PointCloudSubseqField,
     ImageSubseqField,
     MeshSubseqField,
+    MeshField,
     # Transforms
     PointcloudNoise,
     # SubsamplePointcloud,

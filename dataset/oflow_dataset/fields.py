@@ -663,10 +663,11 @@ class MeshSubseqField(Field):
 
 
 class MeshField(Field):
-    def __init__(self, folder_name, seq_len=17,file_ext="npz"):
+    def __init__(self, folder_name, seq_len=17,file_ext="npz",N = 512):
         self.folder_name = folder_name
         self.seq_len = seq_len
         self.file_ext = file_ext
+        self.N = N
 
     def load(self, model_path, idx, c_idx=None, start_idx=0):
         folder = os.path.join(model_path, self.folder_name)
@@ -685,11 +686,11 @@ class MeshField(Field):
 
         return self.data
 
-    def quadric_decimation(self, N = 512):
+    def quadric_decimation(self):
         o3d_mesh = o3d.geometry.TriangleMesh()
         o3d_mesh.vertices = o3d.utility.Vector3dVector(self.data['vertices'])
         o3d_mesh.triangles = o3d.utility.Vector3iVector(self.data['triangles'])
 
-        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(N)
+        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
 
         return decimated_mesh

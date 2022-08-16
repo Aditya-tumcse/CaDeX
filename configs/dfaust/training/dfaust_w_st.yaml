@@ -88,13 +88,15 @@ training:
   batch_size: 12 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
-  eval_every_epoch: 3
+  eval_every_epoch: 10
   iou_threshold: 0.3
   batch_size: 4
   project_to_final_mesh: false
 
 logging:
+
   log_dir: cadex_dfaust_w_st_exp
+
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

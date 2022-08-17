@@ -32,7 +32,7 @@ class Solver(object):
                     shuffle_dataset = True
             logging.debug(f"{mode} dataloader use pin_mem={cfg['dataset']['pin_mem']}")
             self.dataloader_dict[mode] = DataLoader(
-                datasets_dict[mode],
+                datasets_dict[mode], # keys : points, points_t, mesh, pointcloud, oflow_idx, inputs
                 batch_size=bs,
                 shuffle=shuffle_dataset,
                 num_workers=n_workers,

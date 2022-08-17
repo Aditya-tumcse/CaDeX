@@ -18,6 +18,7 @@ from copy import deepcopy
 from core.models.utils.viz_cdc import viz_cdc
 from core.models.utils.oflow_eval.evaluator import MeshEvaluator
 from core.models.utils.oflow_common import eval_oflow_all, eval_iou
+from utils.arap_interpolation import *
 
 
 class Model(ModelBase):
@@ -33,7 +34,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr", "iou", "rec_error"]
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap", "iou", "rec_error"]
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -433,6 +434,11 @@ class CaDeX_DFAU(torch.nn.Module):
             corr_loss = corr_loss_i.mean()
 
         output["batch_loss"] = reconstruction_loss
+
+        #TODO : Add ARAP loss to batch loss
+        output["loss_arap"] = arap_loss
+        output["batch_loss"] += arap_loss
+
         output["loss_recon"] = reconstruction_loss.detach()
         output["loss_recon_i"] = reconstruction_loss_i.detach().reshape(-1)
         if self.use_corr_loss:

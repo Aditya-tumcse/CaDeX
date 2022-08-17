@@ -227,7 +227,7 @@ class DownSampleMesh(object):
     decimated_mesh : open3d.geometry.TriangleMesh
                     Final downsampled mesh
     """
-    def __init__(self,N):
+    def __init__(self,N = 512):
         self.N = N
 
     def __call__(self, data):
@@ -240,23 +240,22 @@ class DownSampleMesh(object):
                Contains vertices and triangles as the keys 
         """
 
-        o3d_mesh = o3d.geometry.TriangleMesh()
-        o3d_mesh.vertices = o3d.utility.Vector3dVector(data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
-        o3d_mesh.triangles = o3d.utility.Vector3iVector(data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
+        downsampled_mesh = []
+        for i in range(data.shape[0]): #TODO : verify the loop
+            o3d_mesh = o3d.geometry.TriangleMesh()
+            o3d_mesh.vertices = o3d.utility.Vector3dVector(data[i]['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
+            o3d_mesh.triangles = o3d.utility.Vector3iVector(data[i]['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
 
-        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
+            decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
+            downsampled_mesh.append(decimated_mesh)
 
-        return decimated_mesh
+        return downsampled_mesh
 
 
 class MeshNoise(object):
     """
     The class is used to add noise to the mesh.
 
-    Args:
-    -----
-    stddev : float
-            A random number between 0 and 1
     
     Returns:
     --------
@@ -266,8 +265,6 @@ class MeshNoise(object):
                 Mesh after the noise is added
     """
 
-    def __init__(self):
-        self.stddev = np.random.random()
     
     def __call__(self, data):
         """
@@ -280,6 +277,8 @@ class MeshNoise(object):
         """
         data_out = data.copy()
         points = data['vertices']
+
+        # TODO : add a loop to add noise to each of the time step model
         noise = self.stddev * np.ones(data_out.shape)
         data_out["vertices"] = points + noise
 

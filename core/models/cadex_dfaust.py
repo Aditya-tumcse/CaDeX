@@ -201,6 +201,55 @@ class Model(ModelBase):
         del batch["model_input"]
         return batch
 
+class ARAPBase(torch.nn.Module):
+    def __init__(self, interp_energy: InterpolationEnergy):
+        super().__init__()
+        self.interp_energy = interp_energy
+    
+    def _get_pred_single(self, shape_x):
+        raise NotImplementedError()
+
+    def get_pred(self, shape_x_arr):
+        raise NotImplementedError()
+
+    def compute_loss(self, shape_x_arr, point_pred_arr):
+        raise NotImplementedError()
+
+    def forward(self, shape_x_arr):
+        raise NotImplementedError()
+    
+    def _loss_deform(self, shape_x_arr, point_pred_arr):
+        E = 0
+        for i in range(len(shape_x_arr)):
+            shape_x = shape_x_arr[i]
+            point_pred = point_pred_arr[i]
+            E = E + self._loss_deform_single(shape_x, point_pred)
+        return E
+    
+    def _loss_deform_single(self, shape_x, points_pred):
+        E_deform = self.interp_energy.forward_single(
+            shape_x.vert, points_pred[0, :, :], shape_x
+        ) + self.interp_energy.forward_single(
+            points_pred[0, :, :], shape_x.vert, shape_x
+        )
+
+        # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
+        # for i in range(self.param.num_timesteps):
+        #     E_x = self.interp_energy.forward_single(
+        #         points_pred[i, :, :], points_pred[i + 1, :, :], shape_x
+        #     )
+        #     E_y = self.interp_energy.forward_single(
+        #         points_pred[i + 1, :, :], points_pred[i, :, :], shape_x
+        #     )
+
+        #     E_deform = E_deform + E_x + E_y
+
+        # return E_deform
+    
+    def compute_loss(self, query, canonical_space):
+        E_arap = self._loss_deform(query, canonical_space)
+
+        return E_arap
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):
@@ -321,8 +370,13 @@ class CaDeX_DFAU(torch.nn.Module):
             _, c_t = self.network_dict["homeomorphism_encoder"](seq_pc)  # B,C; B,T,C
 
         # tranform observation to CDC and encode canonical geometry
+        # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
+        inputs_cdc = self.map2canonical(c_t.transpose(2, 1), np.asarray(input_pack["inputs"].vertices))
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
+
+        # TODO : add ARAP loss by taking into consideration input_pack["inputs"] and inputs_cdc
+        arap_loss = ARAPBase.compute_loss(input_pack['inputs'], inputs_cdc)
 
         # visualize
         if viz_flag:

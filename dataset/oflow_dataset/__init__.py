@@ -12,11 +12,13 @@ from .fields import (
 
 from .transforms import (
     PointcloudNoise,
+    MeshNoise,
     # SubsamplePointcloud,
     SubsamplePoints,
     # Temporal transforms
     SubsamplePointsSeq,
     SubsamplePointcloudSeq,
+    DownSampleMesh
 )
 
 
@@ -37,6 +39,7 @@ __all__ = [
     MeshField,
     # Transforms
     PointcloudNoise,
+    MeshNoise,
     # SubsamplePointcloud,
     SubsamplePoints,
     # Temporal Transforms

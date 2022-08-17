@@ -567,8 +567,7 @@ class PointCloudSubseqField(Field):
             None: np.stack(pc_seq),
             "time": self.get_time_values(),
         }
-if self.transform is not None:
-            data = self.transform(data)
+
         if self.transform is not None:
             data = self.transform(data)
         return data
@@ -686,7 +685,7 @@ class MeshField(Field):
 
         return vertices, triangles
 
-     def get_time_values(self):
+    def get_time_values(self):
         """Returns the time values."""
         if self.seq_len > 1:
             time = np.array([i / (self.seq_len - 1) for i in range(self.seq_len)], dtype=np.float32)

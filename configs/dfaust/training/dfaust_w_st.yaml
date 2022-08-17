@@ -94,7 +94,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: cadex_dfaust_w_st_exp
+  log_dir: cadex_dfaust_w_st_exp_6
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

@@ -59,24 +59,24 @@ class HumansDataset(data.Dataset):
 
         # Set index
         for c_idx, c in enumerate(categories):
-            self.metadata[c]["idx"] = c_idx
+            self.metadata[c]["idx"] = c_idx #only one category: D-FAUST. contains single ID only
 
         # Get all models
         self.models = []
         for c_idx, c in enumerate(categories):
-            subpath = os.path.join(dataset_folder, c)
+            subpath = os.path.join(dataset_folder, c) #subpath: /usr/stud/srinivaa/code/new_CaDeX/CaDeX/resource/data/Humans/D-FAUST
             if not os.path.isdir(subpath):
                 logging.warning("Category %s does not exist in dataset." % c)
             if split is not None and os.path.exists(os.path.join(subpath, split + ".lst")):
-                split_file = os.path.join(subpath, split + ".lst")
+                split_file = os.path.join(subpath, split + ".lst") # for train mode: /usr/stud/srinivaa/code/new_CaDeX/CaDeX/resource/data/Humans/D-FAUST/train.lst
                 with open(split_file, "r") as f:
-                    models_c = f.read().split("\n")
+                    models_c = f.read().split("\n") # All files in train.lst for training mode
             else:
                 models_c = [
                     f for f in os.listdir(subpath) if os.path.isdir(os.path.join(subpath, f))
                 ]
             models_c = list(filter(lambda x: len(x) > 0, models_c))
-            models_len = self.get_models_seq_len(subpath, models_c)
+            models_len = self.get_models_seq_len(subpath, models_c) # gives the total number .npz files in each model
             models_c, start_idx = self.subdivide_into_sequences(models_c, models_len)
             self.models += [
                 {"category": c, "model": m, "start_idx": start_idx[i]}

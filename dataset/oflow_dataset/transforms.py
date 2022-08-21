@@ -287,3 +287,59 @@ class MeshNoise(object):
         mesh_data.triangles = o3d.utility.Vector3iVector(data_out["triangless"])
 
         return data_out, mesh_data
+
+class PreprocessBase:
+    def preprocess(self, shape_x, shape_y):
+        raise NotImplementedError()
+
+class PreprocessRotateBase(PreprocessBase):
+    def __init__(self, axis=1):
+        super().__init__()
+        self.axis = axis
+    
+    def create_rotation_matrix(alpha, axis):
+        alpha = alpha / 180 * math.pi
+        c = torch.cos(alpha)
+        s = torch.sin(alpha)
+        rot_2d = torch.as_tensor([[c, -s], [s, c]], dtype=torch.float, device=device)
+        rot_3d = my_eye(3)
+        idx = [i for i in range(3) if i != axis]
+        for i in range(len(idx)):
+            for j in range(len(idx)):
+                rot_3d[idx[i], idx[j]] = rot_2d[i, j]
+        return rot_3d
+
+    def _create_rot_matrix(self, alpha):
+        return self.create_rotation_matrix(alpha, self.axis)
+
+    def _rand_rot(self):
+        alpha = torch.rand(1) * 360
+        return self._create_rot_matrix(alpha)
+
+    def rot_sub(self, shape, r):
+        if shape.sub is not None:
+            for i_p in range(len(shape.sub[0])):
+                shape.sub[0][i_p][0, :, :] = torch.mm(shape.sub[0][i_p][0, :, :], r)
+
+        if shape.vert_full is not None:
+            shape.vert_full = torch.mm(shape.vert_full, r)
+
+        return shape
+
+    def preprocess(self, shape_x, shape_y):
+        raise NotImplementedError()
+
+
+class PreprocessRotateSame(PreprocessRotateBase):
+    def __init__(self, axis=1):
+        super().__init__(axis)
+        print("Uses preprocessing module 'PreprocessRotateSame'")
+
+    def preprocess(self, shape_x, shape_y):
+        r = self._rand_rot()
+        shape_x.vert = torch.mm(shape_x.vert, r)
+        #shape_y.vert = torch.mm(shape_y.vert, r)
+
+        shape_x = self.rot_sub(shape_x, r)
+        #shape_y = self.rot_sub(shape_y, r)
+        return shape_x

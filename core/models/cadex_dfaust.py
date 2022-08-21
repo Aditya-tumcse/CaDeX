@@ -219,25 +219,26 @@ class ARAPBase(torch.nn.Module):
     def forward(self, shape_x_arr):
         raise NotImplementedError()
     
-    def _loss_deform(self, shape_x_arr, point_pred_arr):
+    def _loss_deform(self, query_arr, canonical_arr):
         E = 0
-        for i in range(len(shape_x_arr)):
-            shape_x = shape_x_arr[i]
-            point_pred = point_pred_arr[i]
-            E = E + self._loss_deform_single(shape_x, point_pred)
+        for i in range(len(query_arr)):
+            query_arr = query_arr[i]
+            #canonical_arr = canonical_arr[i]
+            E = E + self._loss_deform_single(query_arr, canonical_arr)
         return E
     
-    def _loss_deform_single(self, shape_x, points_pred):
+    def _loss_deform_single(self, query, canonical_arr):
         E_deform = self.interp_energy.forward_single(
-            shape_x.vert, points_pred[0, :, :], shape_x
+            query.vert, canonical_arr[0, :, :], query
         ) + self.interp_energy.forward_single(
-            points_pred[0, :, :], shape_x.vert, shape_x
+            canonical_arr[0, :, :], query_arr.vert, query
         )
 
         # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
-        # for i in range(self.param.num_timesteps):
+        # TODO : Verify if this is proper
+        # for i in range():
         #     E_x = self.interp_energy.forward_single(
-        #         points_pred[i, :, :], points_pred[i + 1, :, :], shape_x
+        #         query[i, :, :], query[i + 1, :, :], shape_x
         #     )
         #     E_y = self.interp_energy.forward_single(
         #         points_pred[i + 1, :, :], points_pred[i, :, :], shape_x
@@ -245,7 +246,7 @@ class ARAPBase(torch.nn.Module):
 
         #     E_deform = E_deform + E_x + E_y
 
-        # return E_deform
+        return E_deform
     
     def compute_loss(self, query, canonical_space):
         E_arap = self._loss_deform(query, canonical_space)

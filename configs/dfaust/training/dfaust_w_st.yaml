@@ -46,7 +46,7 @@ dataset:
 
     # path: resource/data/Humans_multi
     # path: /tmp/leijh/Humans_multi
-    path: /usr/stud/srinivaa/code/new_CaDeX/CaDeX/resource/data/Humans
+    path: /usr/data/cvpr_shared/marvin/Data/CaDeX/data/Humans
 
     dataset: Humans
     input_type: pcl_seq
@@ -94,7 +94,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: cadex_dfaust_w_st_exp_6
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_2
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

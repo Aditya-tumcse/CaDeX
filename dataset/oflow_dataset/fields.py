@@ -729,11 +729,11 @@ class MeshField(Field):
         files = self.load_files(model_path, start_idx)
         
         # Load first mesh file
-        vertices, triangles = self.load_single_file(files[0])
+        vertices, triangles = self.load_single_mesh_file(files[0])
         for f in files:
-            vertices, triangles = self.load_single_file(f)
+            vertices, triangles = self.load_single_mesh_file(f)
 
-            mesh_vertices_seq.append(points)
+            mesh_vertices_seq.append(vertices)
             mesh_face_seq.append(triangles)
 
         data = {

@@ -241,12 +241,14 @@ def get_data_fields(mode, cfg):
         )
     # Connectivity Loss:
     if cfg["model"]["loss_corr"]:
-        fields["pointcloud"] = pts_corr_field(
-            pcl_folder,
-            transform=transf_pcl,
-            seq_len=seq_len_train,
-            use_multi_files=training_multi_files,
-        )
+        # fields["pointcloud"] = pts_corr_field(
+        #     pcl_folder,
+        #     transform=transf_pcl,
+        #     seq_len=seq_len_train,
+        #     use_multi_files=training_multi_files,
+        # )
+        fields["pointcloud"] = oflow_dataset.MeshField(
+            mesh_folder, seq_len=seq_len_val)
     if mode == "test" and generate_interpolate:
         fields["mesh"] = oflow_dataset.MeshSubseqField(
             mesh_folder, seq_len=seq_len_val, only_end_points=True
@@ -348,15 +350,14 @@ def get_inputs_field(mode, cfg):
         
         transform = transforms.Compose(
             [
-                oflow_dataset.MeshNoise(),
+                #oflow_dataset.MeshNoise(),
                 oflow_dataset.DownSampleMesh(N = 512)
             ]
         )
 
         inputs_field = oflow_dataset.MeshField(
             cfg["dataset"]["oflow_config"]["mesh_seq_folder"],
-            transform,
-            seq_len=seq_len
+            transform
         )
     elif input_type == "end_pointclouds":
         transform = oflow_dataset.SubsamplePointcloudSeq(

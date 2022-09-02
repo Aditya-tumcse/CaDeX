@@ -5,9 +5,9 @@
 
 import torch.nn.functional
 from utils.base_tools import *
-from param import *
+#from param import *
 
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def arap_exact(vert_diff_t, vert_diff_0, neigh, n_vert):
     S_neigh = torch.bmm(vert_diff_t.unsqueeze(2), vert_diff_0.unsqueeze(1))
 

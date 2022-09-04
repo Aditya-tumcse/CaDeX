@@ -136,7 +136,7 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
             length_sequence=seq_len,
             n_files_per_sequence=cfg["dataset"]["oflow_config"]["n_files_per_sequence"],
             offset_sequence=cfg["dataset"]["oflow_config"]["offset_sequence"],
-            ex_folder_name=cfg["dataset"]["oflow_config"]["pointcloud_seq_folder"],
+            ex_folder_name=cfg["dataset"]["oflow_config"]["mesh_seq_folder"],
         )
     else:
         raise ValueError('Invalid dataset "%s"' % cfg["dataset"]["oflow_config"]["dataset"])

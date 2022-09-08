@@ -663,27 +663,11 @@ class MeshSubseqField(Field):
 
 
 class MeshField(Field):
-    def __init__(self, folder_name, seq_len=17,file_ext="npz"):
+    def __init__(self, folder_name, seq_len=17,file_ext="npz",N):
         self.folder_name = folder_name
         self.seq_len = seq_len
         self.file_ext = file_ext
-
-    def load_np(file_name):
-        return np.load(file_name)
-
-    def load_single_mesh_file(self):
-        """Loads a single file.
-
-        Args:
-            file_path (str): file path
-        """
-        # pointcloud_dict = np.load(file_path)
-        mesh_file = self.load_np(file_path)
-        vertices = mesh_file["vertices"].astype(np.float32)
-        triangles = mesh_file["triangles"].astype(np.float32)
-        
-
-        return vertices, triangles
+        self.N = N
 
     def get_time_values(self):
         """Returns the time values."""
@@ -693,24 +677,14 @@ class MeshField(Field):
             time = np.array([1]).astype(np.float32)
         return time
 
-    def load_files(self, model_path, start_idx):
-        """Loads the model files.
+    def mesh_decimation(self, mesh_data):
+        o3d_mesh = o3d.geometry.TriangleMesh()
+        o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh_data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
+        o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh_data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
 
-        Args:
-            model_path (str): path to model
-            start_idx (int): id of sequence start
-        """
-        folder = os.path.join(model_path, self.folder_name)
-        # files = glob.glob(os.path.join(folder, "*.npz"))
-        files = [
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.endswith(".npz") and "_" not in f
-        ]
-        files.sort()
-        files = files[start_idx : start_idx + self.seq_len]
+        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
 
-        return files
+        return decimated_mesh
 
     def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
         """Loads the point cloud sequence field.
@@ -721,24 +695,25 @@ class MeshField(Field):
             c_idx (int): index of category
             start_idx (int): id of sequence start
         """
+
+        folder = os.path.join(model_path, self.folder_name)
+        mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
+        mesh_files.sort()
+        mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
         mesh_vertices_seq = []
         mesh_face_seq = []
        
-
-        # Get file paths
-        files = self.load_files(model_path, start_idx)
-        
-        # Load first mesh file
-        vertices, triangles = self.load_single_mesh_file(files[0])
         for f in files:
-            vertices, triangles = self.load_single_mesh_file(f)
+            data = np.load(f)
 
-            mesh_vertices_seq.append(vertices)
-            mesh_face_seq.append(triangles)
+            decimated_mesh = self.mesh_decimation(data)
+
+            mesh_vertices_seq.append(np.asarray(decimated_mesh.vertices))
+            mesh_face_seq.append(np.asarray(decimated_mesh.triangles))
 
         data = {
-            "vertices": np.stack(mesh_vertices_seq),
-            "triangles": np.stack(mesh_face_seq),
+            "vertices": np.array(mesh_vertices_seq,dtype=object),
+            "triangles": np.arrray(mesh_face_seq,dtype=object),
             "time": self.get_time_values(),
         }
 

@@ -663,7 +663,7 @@ class MeshSubseqField(Field):
 
 
 class MeshField(Field):
-    def __init__(self, folder_name, seq_len=17,file_ext="npz",N):
+    def __init__(self, folder_name, seq_len=17,file_ext="npz",N = 600):
         self.folder_name = folder_name
         self.seq_len = seq_len
         self.file_ext = file_ext

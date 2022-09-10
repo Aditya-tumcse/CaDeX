@@ -682,7 +682,7 @@ class MeshField(Field):
         o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh_data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
         o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh_data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
 
-        decimated_mesh = o3d_mesh.simplify_quadric_Decimation(self.N)
+        decimated_mesh = o3d_mesh.simplify_quadric_decimation(self.N)
 
         return decimated_mesh
 
@@ -703,7 +703,7 @@ class MeshField(Field):
         mesh_vertices_seq = []
         mesh_face_seq = []
        
-        for f in files:
+        for f in mesh_files:
             data = np.load(f)
 
             decimated_mesh = self.mesh_decimation(data)
@@ -712,8 +712,8 @@ class MeshField(Field):
             mesh_face_seq.append(np.asarray(decimated_mesh.triangles))
 
         data = {
-            "vertices": np.array(mesh_vertices_seq,dtype=object),
-            "triangles": np.arrray(mesh_face_seq,dtype=object),
+            "vertices": np.array(mesh_vertices_seq),
+            "triangles": np.array(mesh_face_seq),
             "time": self.get_time_values(),
         }
 

@@ -348,16 +348,15 @@ def get_inputs_field(mode, cfg):
     #TODO : get inputs fields for mesh sequence
     elif input_type == "mesh_seq":
         
-        transform = transforms.Compose(
-            [
-                #oflow_dataset.MeshNoise(),
-                oflow_dataset.DownSampleMesh(N = 512)
-            ]
-        )
+        # transform = transforms.Compose(
+        #     [
+        #         #oflow_dataset.MeshNoise(),
+        #         #oflow_dataset.DownSampleMesh(N = 512)
+        #     ]
+        # )
 
         inputs_field = oflow_dataset.MeshField(
-            cfg["dataset"]["oflow_config"]["mesh_seq_folder"],
-            transform
+            cfg["dataset"]["oflow_config"]["mesh_seq_folder"]
         )
     elif input_type == "end_pointclouds":
         transform = oflow_dataset.SubsamplePointcloudSeq(

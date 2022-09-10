@@ -36,7 +36,7 @@ dataset:
   pin_mem: False
   dataset_name: oflow_data
   dataset_proportion: [1.0, 1.0] #  [0.1, 0.1]
-  num_workers: 20
+  num_workers: 2
   n_query_sample_eval: 10000
   n_training_frames: 8
   oflow_config:
@@ -85,7 +85,7 @@ training:
       lr_min: 0.00000001
 
   total_epoch: 200000
-  batch_size: 12 # for 2x2080ti, but we use bs=20 for 2x v100
+  batch_size: 1 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
   eval_every_epoch: 10

@@ -706,10 +706,12 @@ class MeshField(Field):
         for f in mesh_files:
             data = np.load(f)
 
-            decimated_mesh = self.mesh_decimation(data)
+            #decimated_mesh = self.mesh_decimation(data)
 
-            mesh_vertices_seq.append(np.asarray(decimated_mesh.vertices))
-            mesh_face_seq.append(np.asarray(decimated_mesh.triangles))
+            # mesh_vertices_seq.append(np.asarray(decimated_mesh.vertices))
+            # mesh_face_seq.append(np.asarray(decimated_mesh.triangles))
+            mesh_vertices_seq.append(data['vertices'])
+            mesh_face_seq.append(data['triangles'])
 
         data = {
             "vertices": np.array(mesh_vertices_seq),

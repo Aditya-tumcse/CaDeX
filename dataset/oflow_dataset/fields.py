@@ -7,7 +7,6 @@ from torchvision import transforms
 import trimesh
 from .core import Field
 import torch
-import open3d as o3d
 from .transforms import SubsamplePointcloudSeq
 
 
@@ -677,14 +676,14 @@ class MeshField(Field):
             time = np.array([1]).astype(np.float32)
         return time
 
-    def mesh_decimation(self, mesh_data):
-        o3d_mesh = o3d.geometry.TriangleMesh()
-        o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh_data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
-        o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh_data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
+    # def mesh_decimation(self, mesh_data):
+    #     o3d_mesh = o3d.geometry.TriangleMesh()
+    #     o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh_data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
+    #     o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh_data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
 
-        decimated_mesh = o3d_mesh.simplify_quadric_decimation(self.N)
+    #     decimated_mesh = o3d_mesh.simplify_quadric_decimation(self.N)
 
-        return decimated_mesh
+    #     return decimated_mesh
 
     def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
         """Loads the point cloud sequence field.

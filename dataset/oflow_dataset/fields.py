@@ -696,9 +696,9 @@ class MeshField(Field):
         mesh_face_seq = []
        
         for f in mesh_files:
-            
             data = np.load(f)
-            to_be_stacked_vertices = np.zeros((570 - np.shape(data['vertices'])[0],3))
+            
+            to_be_stacked_vertices = np.zeros((600 - np.shape(data['vertices'])[0],3))
             stacked_mesh_vertices = np.vstack((data['vertices'],to_be_stacked_vertices))
             
 

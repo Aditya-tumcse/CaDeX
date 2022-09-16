@@ -106,7 +106,7 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
         # Method specific fields (usually correspond to output)
         fields = get_data_fields(mode, cfg) #fields = {'points':,'points_t':,'pointcloud':,'oflow_idx':}
         # Input fields
-        inputs_field = get_inputs_field(mode, cfg)
+        inputs_field = get_inputs_field(mode, cfg) #This field contains the attributes of input data type after transformation is applied
 
         #until now fields dict contains only the keys mentioned above i.e. points, points_t, pointcloud and oflow_idx. We now add new keys to the dictionary
         if inputs_field is not None:

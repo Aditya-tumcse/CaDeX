@@ -676,14 +676,6 @@ class MeshField(Field):
             time = np.array([1]).astype(np.float32)
         return time
 
-    # def mesh_decimation(self, mesh_data):
-    #     o3d_mesh = o3d.geometry.TriangleMesh()
-    #     o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh_data['vertices']) # verify what is the name of the attribute for vertices in data dictionary. It should be vertices as given in load method in MeshField class.
-    #     o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh_data['triangles']) # verify what is the name of the attribute for faces in data dictionary. It should be triangles as given in load method in MeshField class.
-
-    #     decimated_mesh = o3d_mesh.simplify_quadric_decimation(self.N)
-
-    #     return decimated_mesh
 
     def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
         """Loads the point cloud sequence field.
@@ -698,23 +690,29 @@ class MeshField(Field):
         folder = os.path.join(model_path, self.folder_name)
         mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
         mesh_files.sort()
+        
         mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
         mesh_vertices_seq = []
         mesh_face_seq = []
        
         for f in mesh_files:
+            
             data = np.load(f)
+            to_be_stacked_vertices = np.zeros((570 - np.shape(data['vertices'])[0],3))
+            stacked_mesh_vertices = np.vstack((data['vertices'],to_be_stacked_vertices))
+            
 
-            #decimated_mesh = self.mesh_decimation(data)
-
-            # mesh_vertices_seq.append(np.asarray(decimated_mesh.vertices))
-            # mesh_face_seq.append(np.asarray(decimated_mesh.triangles))
-            mesh_vertices_seq.append(data['vertices'])
-            mesh_face_seq.append(data['triangles'])
+            to_be_stacked_triangles = np.zeros((600 - np.shape(data['triangles'])[0],3))
+            stacked_mesh_triangles = np.vstack((data['triangles'],to_be_stacked_triangles))
+            
+            
+            mesh_vertices_seq.append((stacked_mesh_vertices))
+            mesh_face_seq.append(stacked_mesh_triangles)
+            
 
         data = {
-            "vertices": np.array(mesh_vertices_seq),
-            "triangles": np.array(mesh_face_seq),
+            "vertices": np.stack(mesh_vertices_seq),
+            "triangles": np.stack(mesh_face_seq),
             "time": self.get_time_values(),
         }
 

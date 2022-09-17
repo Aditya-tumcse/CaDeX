@@ -67,16 +67,16 @@ class Dataset(Dataset):
             viz_id += str(v) + "_"
         meta_info["viz_id"] = viz_id
         meta_info["mode"] = self.mode
-        if "points" in data.keys():
-            if data["points"].ndim == 3:
-                try:
-                    if self.n_training_frames > 0 and self.mode == "train":
-                        assert data["points"].shape[0] == self.n_training_frames
-                    else:
-                        assert data["points"].shape[0] == self.seq_length
-                except:
-                    print(data["points"].shape[0])
-                    raise RuntimeError("Data Length Invalid")
+        # if "points" in data.keys():
+        #     if data["points"].ndim == 3:
+        #         try:
+        #             if self.n_training_frames > 0 and self.mode == "train":
+        #                 assert data["points"].shape[0] == self.n_training_frames
+        #             else:
+        #                 assert data["points"].shape[0] == self.seq_length
+        #         except:
+        #             print(data["points"].shape[0])
+        #             raise RuntimeError("Data Length Invalid")
         return data, meta_info
 
 

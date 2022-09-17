@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=CaDeX_exp
+#SBATCH --job-name=CaDeX_exp_3
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:2

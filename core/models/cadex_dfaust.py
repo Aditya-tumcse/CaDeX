@@ -18,7 +18,9 @@ from copy import deepcopy
 from core.models.utils.viz_cdc import viz_cdc
 from core.models.utils.oflow_eval.evaluator import MeshEvaluator
 from core.models.utils.oflow_common import eval_oflow_all, eval_iou
-#from utils.arap_interpolation import *
+from core.models.utils_arap.arap_interpolation import ArapInterpolationEnergy
+from core.models.utils_arap.shape_utils import Shape
+
 
 
 class Model(ModelBase):
@@ -34,7 +36,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr", "iou", "rec_error"]
+            "metric": ["batch_loss", "loss_recon", "loss_corr", "loss_arap","iou", "rec_error"]
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -202,62 +204,64 @@ class Model(ModelBase):
         del batch["model_input"]
         return batch
 
-# class ARAPBase(torch.nn.Module):
-#     def __init__(self, interp_energy: InterpolationEnergy):
-#         super().__init__()
-#         self.interp_energy = interp_energy
+
+class ARAPBase(torch.nn.Module):
+    def __init__(self, interp_energy):
+        super().__init__()
+        self.interp_energy = interp_energy
     
-#     def _get_pred_single(self, shape_x):
-#         raise NotImplementedError()
+    def _get_pred_single(self, shape_x):
+        raise NotImplementedError()
 
-#     def get_pred(self, shape_x_arr):
-#         raise NotImplementedError()
+    def get_pred(self, shape_x_arr):
+        raise NotImplementedError()
 
-#     def compute_loss(self, shape_x_arr, point_pred_arr):
-#         raise NotImplementedError()
+    def compute_loss(self, query_arr_vertices, query_arr_triangles, canonical_arr):
+        E_arap = self._loss_deform(query_arr_vertices,query_arr_triangles, canonical_arr)
+        return E_arap
 
-#     def forward(self, shape_x_arr):
-#         raise NotImplementedError()
+    def forward(self, shape_x_arr):
+        raise NotImplementedError()
     
-#     def _loss_deform(self, query_arr, canonical_arr):
-#         E = 0
-#         for i in range(len(query_arr)):
-#             query_arr = query_arr[i]
-#             #canonical_arr = canonical_arr[i]
-#             E = E + self._loss_deform_single(query_arr, canonical_arr)
-#         return E
+    def _loss_deform(self, query_arr_vertices, query_arr_triangles, canonical_arr):
+        E = 0
+        for i in range(canonical_arr.shape[0]):
+            query_arr_shape = Shape(query_arr_vertices[i], query_arr_vertices[i])
+            canonical_arr = canonical_arr[i]
+            E = E + self._loss_deform_single(query_arr_shape, canonical_arr)
+        return E
     
-#     def _loss_deform_single(self, query, canonical_arr):
-#         E_deform = self.interp_energy.forward_single(
-#             query.vert, canonical_arr[0, :, :], query
-#         ) + self.interp_energy.forward_single(
-#             canonical_arr[0, :, :], query_arr.vert, query
-#         )
+    def _loss_deform_single(self, query, canonical_arr):
+        E_deform = self.interp_energy.forward_single(
+            query.vert, canonical_arr, query
+        ) + self.interp_energy.forward_single(
+            canonical_arr, query.vert, query
+        )
 
-#         # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
-#         # TODO : Verify if this is proper
-#         # for i in range():
-#         #     E_x = self.interp_energy.forward_single(
-#         #         query[i, :, :], query[i + 1, :, :], shape_x
-#         #     )
-#         #     E_y = self.interp_energy.forward_single(
-#         #         points_pred[i + 1, :, :], points_pred[i, :, :], shape_x
-#         #     )
+        # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
+        # TODO : Verify if this is proper
+        for i in range(17):
+            E_x = self.interp_energy.forward_single(
+                query.vert[i, :, :],canonical_arr , query
+            )
+            E_y = self.interp_energy.forward_single(
+                canonical_arr, query.vert[i, :, :], shape_x
+            )
 
-#         #     E_deform = E_deform + E_x + E_y
+            E_deform = E_deform + E_x + E_y
 
-#         return E_deform
+        return E_deform
     
-#     def compute_loss(self, query, canonical_space):
-#         E_arap = self._loss_deform(query, canonical_space)
+    def compute_loss(self, query, canonical_space):
+        E_arap = self._loss_deform(query, canonical_space)
 
-#         return E_arap
+        return E_arap
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.cfg = copy.deepcopy(cfg)
-
+        
         self.t_perm_inv = cfg["model"]["t_perm_inv"]
         if self.t_perm_inv:
             #homeomorphism encoder is the deformation encoder
@@ -353,14 +357,16 @@ class CaDeX_DFAU(torch.nn.Module):
             code.transpose(2, 1), coordinates.transpose(2, 1)
         )
         return coordinates.transpose(2, 1)  # B,T,N,3
+      
 
     def forward(self, input_pack, viz_flag):
         output = {}
         phase = input_pack["phase"]
 
-        seq_t, seq_pc, = (
+        seq_t, seq_pc, seq_triv = (
             input_pack["inputs.time"],
             input_pack["inputs.vertices"],
+            input_pack["inputs.triangles"]
         )
         B, T = seq_t.shape
 
@@ -374,11 +380,14 @@ class CaDeX_DFAU(torch.nn.Module):
         # tranform observation to CDC and encode canonical geometry
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
-        #inputs_cdc = self.map2canonical(c_t.transpose(2, 1), np.asarray(input_pack["inputs.vertices"].vertices))
+        
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
 
+        
         # TODO : add ARAP loss by taking into consideration input_pack["inputs"] and inputs_cdc
-        #arap_loss = ARAPBase.compute_loss(input_pack['inputs'], inputs_cdc)
+        interp_energy = ArapInterpolationEnergy()
+        arap_base = ARAPBase(interp_energy)
+        arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
 
         # visualize
         if viz_flag:
@@ -437,8 +446,8 @@ class CaDeX_DFAU(torch.nn.Module):
         output["batch_loss"] = reconstruction_loss
 
         #TODO : Add ARAP loss to batch loss
-        # output["loss_arap"] = arap_loss
-        # output["batch_loss"] += arap_loss
+        output["loss_arap"] = arap_loss
+        output["batch_loss"] += arap_loss
 
         output["loss_recon"] = reconstruction_loss.detach()
         output["loss_recon_i"] = reconstruction_loss_i.detach().reshape(-1)

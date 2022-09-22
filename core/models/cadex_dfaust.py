@@ -216,9 +216,9 @@ class ARAPBase(torch.nn.Module):
     def get_pred(self, shape_x_arr):
         raise NotImplementedError()
 
-    def compute_loss(self, query_arr_vertices, query_arr_triangles, canonical_arr):
-        E_arap = self._loss_deform(query_arr_vertices,query_arr_triangles, canonical_arr)
-        return E_arap
+    # def compute_loss(self, query_arr_vertices, query_arr_triangles, canonical_arr):
+    #     E_arap = self._loss_deform(query_arr_vertices,query_arr_triangles, canonical_arr)
+    #     return E_arap
 
     def forward(self, shape_x_arr):
         raise NotImplementedError()
@@ -226,36 +226,31 @@ class ARAPBase(torch.nn.Module):
     def _loss_deform(self, query_arr_vertices, query_arr_triangles, canonical_arr):
         E = 0
         for i in range(canonical_arr.shape[0]):
-            query_arr_shape = Shape(query_arr_vertices[i], query_arr_vertices[i])
-            canonical_arr = canonical_arr[i]
-            E = E + self._loss_deform_single(query_arr_shape, canonical_arr)
+            query_arr_shape = Shape(query_arr_vertices[i], query_arr_triangles[i])
+            canonical_arr_i = canonical_arr[i]
+            E = E + self._loss_deform_single(query_arr_shape, canonical_arr_i)
         return E
     
-    def _loss_deform_single(self, query, canonical_arr):
-        E_deform = self.interp_energy.forward_single(
-            query.vert, canonical_arr, query
-        ) + self.interp_energy.forward_single(
-            canonical_arr, query.vert, query
-        )
-
+    def _loss_deform_single(self, query, canonical_arr_i):
+        # E_deform = self.interp_energy.forward_single(
+        #     query.vert, canonical_arr_i, query
+        # ) + self.interp_energy.forward_single(
+        #     canonical_arr_i, query.vert, query
+        # )
+        E_deform = 0.0
         # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
         # TODO : Verify if this is proper
         for i in range(17):
             E_x = self.interp_energy.forward_single(
-                query.vert[i, :, :],canonical_arr , query
+                query.vert[i, :, :],canonical_arr_i , query
             )
             E_y = self.interp_energy.forward_single(
-                canonical_arr, query.vert[i, :, :], shape_x
+                canonical_arr_i, query.vert[i, :, :], query
             )
 
             E_deform = E_deform + E_x + E_y
 
         return E_deform
-    
-    def compute_loss(self, query, canonical_space):
-        E_arap = self._loss_deform(query, canonical_space)
-
-        return E_arap
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):

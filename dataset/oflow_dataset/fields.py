@@ -695,27 +695,14 @@ class MeshField(Field):
         mesh_vertices_seq = []
         mesh_face_seq = []
 
-        vertices_size_list = []
-        for f in mesh_files:
-            data = np.load(f)['vertices']
-            vertices_size_list.append(data.shape[0])
-        max_vertices_size = max(vertices_size_list)
 
         for f in mesh_files:
             data = np.load(f)
-            if(data['vertices'].shape[0] < max_vertices_size):
-                to_be_stacked_vertices = np.zeros((max_vertices_size - np.shape(data['vertices'])[0],3))
-                stacked_mesh_vertices = np.vstack((data['vertices'],to_be_stacked_vertices))
-            else:
-                stacked_mesh_vertices = data['vertices']
-            
-            
-            to_be_stacked_triangles = np.zeros((600 - np.shape(data['triangles'])[0],3))
-            stacked_mesh_triangles = np.vstack((data['triangles'],to_be_stacked_triangles))
-                
-            
-            mesh_vertices_seq.append(stacked_mesh_vertices)
-            mesh_face_seq.append(stacked_mesh_triangles)
+            vertices = data['points']
+            triangles = data['triangles']
+
+            mesh_vertices_seq.append(vertices)
+            mesh_face_seq.append(triangles)
             
 
         data = {

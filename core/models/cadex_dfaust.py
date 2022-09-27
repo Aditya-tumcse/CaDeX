@@ -1,5 +1,6 @@
 from .model_base import ModelBase
 import torch
+torch.cuda.empty_cache()
 
 import copy
 
@@ -36,7 +37,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr", "loss_arap","iou", "rec_error"]
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -226,26 +227,22 @@ class ARAPBase(torch.nn.Module):
     def _loss_deform(self, query_arr_vertices, query_arr_triangles, canonical_arr):
         E = 0
         for i in range(canonical_arr.shape[0]):
-            query_arr_shape = Shape(query_arr_vertices[i], query_arr_triangles[i])
             canonical_arr_i = canonical_arr[i]
-            E = E + self._loss_deform_single(query_arr_shape, canonical_arr_i)
+            E = E + self._loss_deform_single(query_arr_vertices[i],query_arr_triangles[i],canonical_arr_i)
         return E
     
-    def _loss_deform_single(self, query, canonical_arr_i):
-        # E_deform = self.interp_energy.forward_single(
-        #     query.vert, canonical_arr_i, query
-        # ) + self.interp_energy.forward_single(
-        #     canonical_arr_i, query.vert, query
-        # )
+    def _loss_deform_single(self, query_vertices, query_faces, canonical_arr_i):
+       
         E_deform = 0.0
         # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
         # TODO : Verify if this is proper
         for i in range(17):
+            query_shape = Shape(query_vertices[i],query_faces[i])
             E_x = self.interp_energy.forward_single(
-                query.vert[i, :, :],canonical_arr_i , query
+                query_vertices[i],canonical_arr_i , query_shape
             )
             E_y = self.interp_energy.forward_single(
-                canonical_arr_i, query.vert[i, :, :], query
+                canonical_arr_i, query_vertices[i], query_shape
             )
 
             E_deform = E_deform + E_x + E_y

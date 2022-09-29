@@ -6,6 +6,7 @@ from .fields import (
     PointsSubseqField,
     ImageSubseqField,
     PointCloudSubseqField,
+    PointCloudField,
     MeshSubseqField,
     MeshField,
 )

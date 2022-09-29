@@ -408,168 +408,168 @@ class ImageSubseqField(Field):
         return data
 
 
-class PointCloudSubseqField(Field):
-    """Point cloud subsequence field class.
+# class PointCloudSubseqField(Field):
+#     """Point cloud subsequence field class.
 
-    Args:
-        folder_name (str): points folder name
-        transform (transform): transform
-        seq_len (int): length of sequence
-        only_end_points (bool): whether to only return end points
-        scale_pointcloud (bool): whether to scale the point cloud
-            w.r.t. the first point cloud of the sequence
-    """
+#     Args:
+#         folder_name (str): points folder name
+#         transform (transform): transform
+#         seq_len (int): length of sequence
+#         only_end_points (bool): whether to only return end points
+#         scale_pointcloud (bool): whether to scale the point cloud
+#             w.r.t. the first point cloud of the sequence
+#     """
 
-    def __init__(
-        self,
-        folder_name,
-        transform=None,
-        seq_len=17,
-        only_end_points=False,
-        scale_pointcloud=True,
-        use_multi_files=False,
-    ):
-        self.folder_name = folder_name
-        self.transform = transform
-        self.seq_len = seq_len
-        self.only_end_points = only_end_points
-        self.scale_pointcloud = scale_pointcloud
+#     def __init__(
+#         self,
+#         folder_name,
+#         transform=None,
+#         seq_len=17,
+#         only_end_points=False,
+#         scale_pointcloud=True,
+#         use_multi_files=False,
+#     ):
+#         self.folder_name = folder_name
+#         self.transform = transform
+#         self.seq_len = seq_len
+#         self.only_end_points = only_end_points
+#         self.scale_pointcloud = scale_pointcloud
 
-        self.use_multi_files = use_multi_files
-        if self.use_multi_files:
-            assert transform is not None
-            N = None
-            if isinstance(transform, SubsamplePointcloudSeq):
-                N = transform.N
-            else:
-                for t in transform.transforms:
-                    if isinstance(t, SubsamplePointcloudSeq):
-                        N = t.N
-            if N is None:
-                raise RuntimeError("can't grab N")
-            self.N_files = int(np.ceil(N / 10000))
-            self.load_idx = np.random.choice(replace=False, a=10, size=self.N_files).tolist()
+#         self.use_multi_files = use_multi_files
+#         if self.use_multi_files:
+#             assert transform is not None
+#             N = None
+#             if isinstance(transform, SubsamplePointcloudSeq):
+#                 N = transform.N
+#             else:
+#                 for t in transform.transforms:
+#                     if isinstance(t, SubsamplePointcloudSeq):
+#                         N = t.N
+#             if N is None:
+#                 raise RuntimeError("can't grab N")
+#             self.N_files = int(np.ceil(N / 10000))
+#             self.load_idx = np.random.choice(replace=False, a=10, size=self.N_files).tolist()
 
-    def load_np(self, fn):
-        assert "_" not in fn[-6:]
-        if self.use_multi_files:
-            out = {}
-            for i in self.load_idx:
-                assert fn.endswith(".npz")
-                _f = fn[:-4] + "_%d.npz" % i
-                data = np.load(_f)
-                if "loc" not in out.keys():
-                    for k in data.files:
-                        out[k] = data[k]
-                else:
-                    for k in ["points"]:
-                        out[k] = np.concatenate([out[k], data[k]], axis=0)
-            return out
-        else:
-            return np.load(fn)
+#     def load_np(self, fn):
+#         assert "_" not in fn[-6:]
+#         if self.use_multi_files:
+#             out = {}
+#             for i in self.load_idx:
+#                 assert fn.endswith(".npz")
+#                 _f = fn[:-4] + "_%d.npz" % i
+#                 data = np.load(_f)
+#                 if "loc" not in out.keys():
+#                     for k in data.files:
+#                         out[k] = data[k]
+#                 else:
+#                     for k in ["points"]:
+#                         out[k] = np.concatenate([out[k], data[k]], axis=0)
+#             return out
+#         else:
+#             return np.load(fn)
 
-    def return_loc_scale(self, mesh):
-        """Returns location and scale of mesh.
+#     def return_loc_scale(self, mesh):
+#         """Returns location and scale of mesh.
 
-        Args:
-            mesh (trimesh): mesh
-        """
-        bbox = mesh.bounding_box.bounds
-        # Compute location and scale
-        loc = (bbox[0] + bbox[1]) / 2
-        scale = (bbox[1] - bbox[0]).max() / (1 - 0)
-        return loc, scale
+#         Args:
+#             mesh (trimesh): mesh
+#         """
+#         bbox = mesh.bounding_box.bounds
+#         # Compute location and scale
+#         loc = (bbox[0] + bbox[1]) / 2
+#         scale = (bbox[1] - bbox[0]).max() / (1 - 0)
+#         return loc, scale
 
-    def apply_normalization(self, mesh, loc, scale):
-        """Normalizes the mesh.
+#     def apply_normalization(self, mesh, loc, scale):
+#         """Normalizes the mesh.
 
-        Args:
-            mesh (trimesh): mesh
-            loc (tuple): location for normalization
-            scale (float): scale for normalization
-        """
-        mesh.apply_translation(-loc)
-        mesh.apply_scale(1 / scale)
-        return mesh
+#         Args:
+#             mesh (trimesh): mesh
+#             loc (tuple): location for normalization
+#             scale (float): scale for normalization
+#         """
+#         mesh.apply_translation(-loc)
+#         mesh.apply_scale(1 / scale)
+#         return mesh
 
-    def load_files(self, model_path, start_idx):
-        """Loads the model files.
+#     def load_files(self, model_path, start_idx):
+#         """Loads the model files.
 
-        Args:
-            model_path (str): path to model
-            start_idx (int): id of sequence start
-        """
-        folder = os.path.join(model_path, self.folder_name)
-        # files = glob.glob(os.path.join(folder, "*.npz"))
-        files = [
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.endswith(".npz") and "_" not in f
-        ]
-        files.sort()
-        files = files[start_idx : start_idx + self.seq_len]
+#         Args:
+#             model_path (str): path to model
+#             start_idx (int): id of sequence start
+#         """
+#         folder = os.path.join(model_path, self.folder_name)
+#         # files = glob.glob(os.path.join(folder, "*.npz"))
+#         files = [
+#             os.path.join(folder, f)
+#             for f in os.listdir(folder)
+#             if f.endswith(".npz") and "_" not in f
+#         ]
+#         files.sort()
+#         files = files[start_idx : start_idx + self.seq_len]
 
-        if self.only_end_points:
-            files = [files[0], files[-1]]
+#         if self.only_end_points:
+#             files = [files[0], files[-1]]
 
-        return files
+#         return files
 
-    def load_single_file(self, file_path):
-        """Loads a single file.
+#     def load_single_file(self, file_path):
+#         """Loads a single file.
 
-        Args:
-            file_path (str): file path
-        """
-        # pointcloud_dict = np.load(file_path)
-        pointcloud_dict = self.load_np(file_path)
-        points = pointcloud_dict["points"].astype(np.float32)
-        loc = pointcloud_dict["loc"].astype(np.float32)
-        scale = pointcloud_dict["scale"].astype(np.float32)
+#         Args:
+#             file_path (str): file path
+#         """
+#         # pointcloud_dict = np.load(file_path)
+#         pointcloud_dict = self.load_np(file_path)
+#         points = pointcloud_dict["points"].astype(np.float32)
+#         loc = pointcloud_dict["loc"].astype(np.float32)
+#         scale = pointcloud_dict["scale"].astype(np.float32)
 
-        return points, loc, scale
+#         return points, loc, scale
 
-    def get_time_values(self):
-        """Returns the time values."""
-        if self.seq_len > 1:
-            time = np.array([i / (self.seq_len - 1) for i in range(self.seq_len)], dtype=np.float32)
-        else:
-            time = np.array([1]).astype(np.float32)
-        return time
+#     def get_time_values(self):
+#         """Returns the time values."""
+#         if self.seq_len > 1:
+#             time = np.array([i / (self.seq_len - 1) for i in range(self.seq_len)], dtype=np.float32)
+#         else:
+#             time = np.array([1]).astype(np.float32)
+#         return time
 
-    def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
-        """Loads the point cloud sequence field.
+#     def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
+#         """Loads the point cloud sequence field.
 
-        Args:
-            model_path (str): path to model
-            idx (int): ID of data point
-            c_idx (int): index of category
-            start_idx (int): id of sequence start
-        """
-        pc_seq = []
-        # ! if use multi files, select the multi-file index by now
-        if self.use_multi_files:
-            self.load_idx = np.random.choice(replace=False, a=10, size=self.N_files).tolist()
+#         Args:
+#             model_path (str): path to model
+#             idx (int): ID of data point
+#             c_idx (int): index of category
+#             start_idx (int): id of sequence start
+#         """
+#         pc_seq = []
+#         # ! if use multi files, select the multi-file index by now
+#         if self.use_multi_files:
+#             self.load_idx = np.random.choice(replace=False, a=10, size=self.N_files).tolist()
 
-        # Get file paths
-        files = self.load_files(model_path, start_idx)
-        # Load first pcl file
-        _, loc0, scale0 = self.load_single_file(files[0])
-        for f in files:
-            points, loc, scale = self.load_single_file(f)
-            # Transform mesh to loc0 / scale0
-            if self.scale_pointcloud:
-                points = (loc + scale * points - loc0) / scale0
+#         # Get file paths
+#         files = self.load_files(model_path, start_idx)
+#         # Load first pcl file
+#         _, loc0, scale0 = self.load_single_file(files[0])
+#         for f in files:
+#             points, loc, scale = self.load_single_file(f)
+#             # Transform mesh to loc0 / scale0
+#             if self.scale_pointcloud:
+#                 points = (loc + scale * points - loc0) / scale0
 
-            pc_seq.append(points)
+#             pc_seq.append(points)
 
-        data = {
-            None: np.stack(pc_seq),
-            "time": self.get_time_values(),
-        }
+#         data = {
+#             None: np.stack(pc_seq),
+#             "time": self.get_time_values(),
+#         }
 
-        if self.transform is not None:
-            data = self.transform(data)
-        return data
+#         if self.transform is not None:
+#             data = self.transform(data)
+#         return data
 
 
 class MeshSubseqField(Field):
@@ -712,7 +712,53 @@ class MeshField(Field):
         }
 
         return data
-    
+
+class PointCloudSubseqField(Field):
+    def __init__(self, folder_name, seq_len=17,file_ext="npz",N = 600):
+        self.folder_name = folder_name
+        self.seq_len = seq_len
+        self.file_ext = file_ext
+        self.N = N
+
+    def get_time_values(self):
+        """Returns the time values."""
+        if self.seq_len > 1:
+            time = np.array([i / (self.seq_len - 1) for i in range(self.seq_len)], dtype=np.float32)
+        else:
+            time = np.array([1]).astype(np.float32)
+        return time
+
+
+    def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
+        """Loads the point cloud sequence field.
+
+        Args:
+            model_path (str): path to model
+            idx (int): ID of data point
+            c_idx (int): index of category
+            start_idx (int): id of sequence start
+        """
+
+        folder = os.path.join(model_path, self.folder_name)
+        mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
+        mesh_files.sort()
+        
+        mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
+        mesh_vertices_seq = []
+
+        for f in mesh_files:
+            data = np.load(f)
+            vertices = data['points']
+
+            mesh_vertices_seq.append(vertices)
+            
+
+        data = {
+            "vertices": np.stack(mesh_vertices_seq),
+            "time": self.get_time_values(),
+        }
+
+        return data
 
     
 

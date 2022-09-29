@@ -247,7 +247,7 @@ def get_data_fields(mode, cfg):
         #     seq_len=seq_len_train,
         #     use_multi_files=training_multi_files,
         # )
-        fields["pointcloud"] = oflow_dataset.PointCloudSubseqField(
+        fields["pointcloud"] = oflow_dataset.PointCloudField(
             mesh_folder, seq_len=seq_len_val)
     if mode == "test" and generate_interpolate:
         fields["mesh"] = oflow_dataset.MeshSubseqField(

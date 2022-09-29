@@ -211,18 +211,18 @@ def get_data_fields(mode, cfg):
                     unpackbits=unpackbits,
                     use_multi_files=training_multi_files,
                 )
-            fields["points_t"] = pts_iou_field(
-                p_folder,
-                transform=transf_pt,
-                seq_len=seq_len_train,
-                unpackbits=unpackbits,
-                not_choose_last=not_choose_last,
-                use_multi_files=training_multi_files,
-            )
+            # fields["points_t"] = pts_iou_field(
+            #     p_folder,
+            #     transform=transf_pt,
+            #     seq_len=seq_len_train,
+            #     unpackbits=unpackbits,
+            #     not_choose_last=not_choose_last,
+            #     use_multi_files=training_multi_files,
+            # )
 
 
-            fields["mesh"] = oflow_dataset.MeshField(
-            mesh_folder, seq_len=seq_len_val)
+            # fields["mesh"] = oflow_dataset.MeshField(
+            # mesh_folder, seq_len=seq_len_val)
 
     # only training can be boost by multi-files
     # modify here, if not train, val should also load the same as the test
@@ -247,7 +247,7 @@ def get_data_fields(mode, cfg):
         #     seq_len=seq_len_train,
         #     use_multi_files=training_multi_files,
         # )
-        fields["pointcloud"] = oflow_dataset.MeshField(
+        fields["pointcloud"] = oflow_dataset.PointCloudSubseqField(
             mesh_folder, seq_len=seq_len_val)
     if mode == "test" and generate_interpolate:
         fields["mesh"] = oflow_dataset.MeshSubseqField(

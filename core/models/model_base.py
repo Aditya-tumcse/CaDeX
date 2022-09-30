@@ -3,6 +3,7 @@ import torch
 import copy
 import logging
 import numpy as np
+from torch.cuda.amp import autocast
 
 
 class ModelBase(object):
@@ -24,7 +25,7 @@ class ModelBase(object):
         return
 
     def _register_optimizer(self):
-        optimizer_dict = {}
+        #optimizer_dict = {}
         parameter_keys = self.optimizer_specs.keys()
         logging.debug("Config defines {} network parameters optimization".format(parameter_keys))
         # if len(parameter_keys) != len(self.network.network_dict.keys()):
@@ -34,20 +35,21 @@ class ModelBase(object):
                 params=self.network.parameters(),
                 lr=self.optimizer_specs["all"]["lr"],
             )
-            optimizer_dict["all"] = optimizer
-        else:
-            for key in parameter_keys:
-                try:
-                    optimizer = torch.optim.Adam(
-                        params=self.network.network_dict[key].parameters(),
-                        lr=self.optimizer_specs[key]["lr"],
-                    )
-                    optimizer_dict[key] = optimizer
-                except:
-                    raise RuntimeError(
-                        "Optimizer registration of network component {} fail!".format(key)
-                    )
-        return optimizer_dict
+            
+            #optimizer_dict["all"] = optimizer
+        # else:
+        #     for key in parameter_keys:
+        #         try:
+        #             optimizer = torch.optim.Adam(
+        #                 params=self.network.network_dict[key].parameters(),
+        #                 lr=self.optimizer_specs[key]["lr"],
+        #             )
+        #             optimizer_dict[key] = optimizer
+        #         except:
+        #             raise RuntimeError(
+        #                 "Optimizer registration of network component {} fail!".format(key)
+        #             )
+        return optimizer
 
     def count_parameters(self):
         net = (
@@ -109,26 +111,29 @@ class ModelBase(object):
                 batch[k] = v.detach()
         return batch
 
-    def train_batch(self, batch, viz_flag=False):
+    def train_batch(self, batch, scaler, viz_flag=False):
         batch = self._preprocess(batch, viz_flag) #Preprocess the batch of training data
         self.set_train()
         self.zero_grad()
-        batch = self._predict(batch, viz_flag)
-        batch = self._postprocess(batch)
+
+        with autocast():
+            batch = self._predict(batch, viz_flag)
+            batch = self._postprocess(batch)
         if self.loss_clip > 0.0:
             if abs(batch["batch_loss"]) > self.loss_clip:
                 logging.warning(
                     f"Loss Clipped from {abs(batch['batch_loss'])} to {self.loss_clip}"
                 )
             batch["batch_loss"] = torch.clamp(batch["batch_loss"], -self.loss_clip, self.loss_clip)
-        batch["batch_loss"].backward()
+        scaler.scale(batch["batch_loss"]).backward()
         if self.grad_clip > 0:
             grad_norm = torch.nn.utils.clip_grad_norm_(self.network.parameters(), self.grad_clip)
             if grad_norm > self.grad_clip:
                 logging.info(
                     "Warning! Clip gradient from {} to {}".format(grad_norm, self.grad_clip)
                 )
-        self.optimizers_step()
+        scaler.step(self.optimizer_dict)
+        scaler.update()
         batch = self._postprocess_after_optim(batch)
         batch = self._detach_before_return(batch)
         return batch
@@ -156,10 +161,11 @@ class ModelBase(object):
         return batch
 
     def zero_grad(self):
-        for k in self.optimizer_dict.keys():
-            self.optimizer_dict[k].zero_grad()
+        # for k in self.optimizer_dict.keys():
+        #     self.optimizer_dict[k].zero_grad()
+        self.optimizer_dict.zero_grad()
 
-    def optimizers_step(self):
+    def optimizers_step(self, scaler):
         for k in self.optimizer_dict.keys():
             self.optimizer_dict[k].step()
 

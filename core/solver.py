@@ -7,6 +7,7 @@ import logging
 import torch
 from torch.utils.data import DataLoader
 import gc
+from torch.cuda.amp import GradScaler
 
 
 class Solver(object):
@@ -50,7 +51,8 @@ class Solver(object):
 
         self.eval_every_epoch = int(cfg["evaluation"]["eval_every_epoch"])
 
-        self.clear_phase_cache = cfg["training"]["clear_phase_cache"]
+        #self.clear_phase_cache = cfg["training"]["clear_phase_cache"]
+        self.clear_phase_cache = True
 
         # save lr decay
         self.lr_config = self.init_lr_schedule()
@@ -116,15 +118,17 @@ class Solver(object):
                     continue  # for val and test, skip if not meets eval epoch interval
                 batch_total_num = len(self.dataloader_dict[mode]) #Length of dataloader --> Number of batches in an epoch
                 self.batch_in_epoch_count = 0
+
+                scaler = GradScaler()
                 for batch in iter(self.dataloader_dict[mode]):
                     self.batch_in_epoch_count += 1
                     self.batch_count += 1
                     self.viz_flag = self.viz_state(mode)
                     batch[0]["epoch"] = self.current_epoch
                     if mode == "train":
-                        batch = self.model.train_batch(batch, self.viz_flag)
+                        batch = self.model.train_batch(batch, scaler, self.viz_flag)
                     else:
-                        batch = self.model.val_batch(batch, self.viz_flag)
+                        batch = self.model.val_batch(batch, scaler, self.viz_flag)
                     batch = self.wrap_output(batch, batch_total_num, mode=mode)
                     self.logger.log_batch(batch)
                 self.logger.log_phase()

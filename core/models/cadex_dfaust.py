@@ -1,6 +1,5 @@
 from .model_base import ModelBase
 import torch
-torch.cuda.empty_cache()
 
 import copy
 
@@ -37,7 +36,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
+            "metric": ["batch_loss", "loss_recon", "loss_corr","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -377,9 +376,9 @@ class CaDeX_DFAU(torch.nn.Module):
 
         
         # TODO : add ARAP loss by taking into consideration input_pack["inputs"] and inputs_cdc
-        interp_energy = ArapInterpolationEnergy()
-        arap_base = ARAPBase(interp_energy)
-        arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
+        # interp_energy = ArapInterpolationEnergy()
+        # arap_base = ARAPBase(interp_energy)
+        # arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
 
         # visualize
         if viz_flag:
@@ -413,7 +412,7 @@ class CaDeX_DFAU(torch.nn.Module):
         # reconstruct in canonical space
         pr = self.decode_by_cdc(observation_c=c_g, query=cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
         occ_hat = pr.probs #occupancy field in canonical space
-        reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
+        reconstruction_loss_i = torch.nn.functional.binary_cross_entropy_with_logits(
             occ_hat, input_pack["points.occ"], reduction="none"
         )
         reconstruction_loss = reconstruction_loss_i.mean()
@@ -438,8 +437,8 @@ class CaDeX_DFAU(torch.nn.Module):
         output["batch_loss"] = reconstruction_loss
 
         #TODO : Add ARAP loss to batch loss
-        output["loss_arap"] = arap_loss
-        output["batch_loss"] += arap_loss
+        # output["loss_arap"] = arap_loss
+        # output["batch_loss"] += arap_loss
 
         output["loss_recon"] = reconstruction_loss.detach()
         output["loss_recon_i"] = reconstruction_loss_i.detach().reshape(-1)
@@ -476,7 +475,10 @@ class CaDeX_DFAU(torch.nn.Module):
         logits = self.network_dict["canonical_geometry_decoder"](
             query, None, observation_c
         ).reshape(B, T, N)
-        return dist.Bernoulli(logits=logits)
+
+        #return dist.Bernoulli(logits=logits)
+        return logits
+
 
     def decode_by_current(self, query, z_none, c):
         # ! decoder by coordinate in current coordinate space, only used in viz

@@ -714,8 +714,9 @@ class MeshField(Field):
         return data
 
 class PointCloudField(Field):
-    def __init__(self, folder_name, seq_len=17,file_ext="npz",N = 600):
+    def __init__(self, folder_name,transform=None,seq_len=17,file_ext="npz",N = 600):
         self.folder_name = folder_name
+        self.transform = transform
         self.seq_len = seq_len
         self.file_ext = file_ext
         self.N = N
@@ -758,6 +759,9 @@ class PointCloudField(Field):
             "time": self.get_time_values(),
         }
 
+        if self.transform is not None:
+            data = self.transform(data)
+            
         return data
 
     

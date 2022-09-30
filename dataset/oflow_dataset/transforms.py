@@ -48,7 +48,8 @@ class SubsamplePointcloud(object):
         """
         data_out = data.copy()
         points = data[None]
-
+        
+        
         indices = np.random.randint(points.shape[0], size=self.N)
         data_out[None] = points[indices, :]
 
@@ -146,7 +147,7 @@ class SubsamplePointcloudSeq(object):
         random (bool): whether to sub-sample randomly
     """
 
-    def __init__(self, N, connected_samples=False, random=True):
+    def __init__(self, N, connected_samples=True, random=True):
         self.N = N
         self.connected_samples = connected_samples
         self.random = random
@@ -158,12 +159,14 @@ class SubsamplePointcloudSeq(object):
             data (dictionary): data dictionary
         """
         data_out = data.copy()
-        points = data[None]  # n_steps x T x 3
+        #points = data[None]  # n_steps x T x 3
+        points = data["vertices"]
         n_steps, T, dim = points.shape
         N_max = min(self.N, T)
         if self.connected_samples or not self.random:
             indices = np.random.randint(T, size=self.N) if self.random else np.arange(N_max)
-            data_out[None] = points[:, indices, :]
+            #data_out[None] = points[:, indices, :]
+            data_out["vertices"] = points[:,indices,:]
         else:
             indices = np.random.randint(T, size=(n_steps, self.N))
             data_out[None] = points[np.arange(n_steps).reshape(-1, 1), indices, :]

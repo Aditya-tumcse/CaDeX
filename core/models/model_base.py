@@ -3,7 +3,6 @@ import torch
 import copy
 import logging
 import numpy as np
-from torch.cuda.amp import autocast
 
 
 class ModelBase(object):
@@ -113,7 +112,7 @@ class ModelBase(object):
                 batch[k] = v.detach()
         return batch
 
-    def train_batch(self, batch, scaler, batch_idx, viz_flag=False):
+    def train_batch(self, batch, viz_flag=False):
         batch = self._preprocess(batch, viz_flag) #Preprocess the batch of training data
         self.set_train()
         self.zero_grad()

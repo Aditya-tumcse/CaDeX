@@ -167,7 +167,7 @@ class ModelBase(object):
             self.optimizer_dict[k].zero_grad()
         
 
-    def optimizers_step(self, scaler):
+    def optimizers_step(self):
         for k in self.optimizer_dict.keys():
             self.optimizer_dict[k].step()
 

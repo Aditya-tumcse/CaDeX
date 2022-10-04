@@ -327,6 +327,7 @@ class CaDeX_DFAU(torch.nn.Module):
         # code: B,C,T, query: B,T,N,3
         # B1, M1, _ = F.shape # batch, templates, C
         # B2, _, M2, D = x.shape # batch, Npts, templates, 3
+        
         coordinates = self.network_dict["homeomorphism_decoder"].forward(
             code.transpose(2, 1), query.transpose(2, 1)
         )
@@ -334,6 +335,7 @@ class CaDeX_DFAU(torch.nn.Module):
             out = torch.sigmoid(coordinates) - 0.5
         else:
             out = coordinates
+        
         if return_uncompressed:
             return out.transpose(2, 1), coordinates.transpose(2, 1)  # B,T,N,3
         else:
@@ -412,7 +414,7 @@ class CaDeX_DFAU(torch.nn.Module):
         # reconstruct in canonical space
         pr = self.decode_by_cdc(observation_c=c_g, query=cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
         occ_hat = pr.probs #occupancy field in canonical space
-        reconstruction_loss_i = torch.nn.functional.binary_cross_entropy_with_logits(
+        reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
             occ_hat, input_pack["points.occ"], reduction="none"
         )
         reconstruction_loss = reconstruction_loss_i.mean()
@@ -476,8 +478,8 @@ class CaDeX_DFAU(torch.nn.Module):
             query, None, observation_c
         ).reshape(B, T, N)
 
-        #return dist.Bernoulli(logits=logits)
-        return logits
+        return dist.Bernoulli(logits=logits)
+        
 
 
     def decode_by_current(self, query, z_none, c):

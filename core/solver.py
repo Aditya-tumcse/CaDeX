@@ -7,7 +7,6 @@ import logging
 import torch
 from torch.utils.data import DataLoader
 import gc
-from torch.cuda.amp import GradScaler
 
 
 class Solver(object):

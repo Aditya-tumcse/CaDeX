@@ -25,7 +25,7 @@ class ModelBase(object):
         return
 
     def _register_optimizer(self):
-        #optimizer_dict = {}
+        optimizer_dict = {}
         parameter_keys = self.optimizer_specs.keys()
         logging.debug("Config defines {} network parameters optimization".format(parameter_keys))
         # if len(parameter_keys) != len(self.network.network_dict.keys()):
@@ -35,21 +35,20 @@ class ModelBase(object):
                 params=self.network.parameters(),
                 lr=self.optimizer_specs["all"]["lr"],
             )
-            
-            #optimizer_dict["all"] = optimizer
-        # else:
-        #     for key in parameter_keys:
-        #         try:
-        #             optimizer = torch.optim.Adam(
-        #                 params=self.network.network_dict[key].parameters(),
-        #                 lr=self.optimizer_specs[key]["lr"],
-        #             )
-        #             optimizer_dict[key] = optimizer
-        #         except:
-        #             raise RuntimeError(
-        #                 "Optimizer registration of network component {} fail!".format(key)
-        #             )
-        return optimizer
+            optimizer_dict["all"] = optimizer
+        else:
+            for key in parameter_keys:
+                try:
+                    optimizer = torch.optim.Adam(
+                        params=self.network.network_dict[key].parameters(),
+                        lr=self.optimizer_specs[key]["lr"],
+                    )
+                    optimizer_dict[key] = optimizer
+                except:
+                    raise RuntimeError(
+                        "Optimizer registration of network component {} fail!".format(key)
+                    )
+        return optimizer_dict
 
     def count_parameters(self):
         net = (
@@ -69,6 +68,7 @@ class ModelBase(object):
         for k in data.keys():
             if isinstance(data[k], torch.Tensor):
                 data[k] = data[k].cuda().float() #Send the batch of data into GPU
+                
         data["phase"] = meta_info["mode"][0]
         data["viz_flag"] = viz_flag
         batch = {"model_input": data, "meta_info": meta_info}
@@ -78,7 +78,9 @@ class ModelBase(object):
         """
         forward through the network
         """
+        
         model_out = self.network(batch["model_input"], viz_flag)
+        
         for k, v in model_out.items():
             batch[k] = v  # directly place all output to batch dict
         return batch
@@ -111,29 +113,30 @@ class ModelBase(object):
                 batch[k] = v.detach()
         return batch
 
-    def train_batch(self, batch, scaler, viz_flag=False):
+    def train_batch(self, batch, scaler, batch_idx, viz_flag=False):
         batch = self._preprocess(batch, viz_flag) #Preprocess the batch of training data
         self.set_train()
         self.zero_grad()
 
-        with autocast():
-            batch = self._predict(batch, viz_flag)
-            batch = self._postprocess(batch)
+        batch = self._predict(batch, viz_flag)
+        batch = self._postprocess(batch)
         if self.loss_clip > 0.0:
             if abs(batch["batch_loss"]) > self.loss_clip:
                 logging.warning(
                     f"Loss Clipped from {abs(batch['batch_loss'])} to {self.loss_clip}"
                 )
             batch["batch_loss"] = torch.clamp(batch["batch_loss"], -self.loss_clip, self.loss_clip)
-        scaler.scale(batch["batch_loss"]).backward()
+        
+        batch["batch_loss"].backward()
+        
         if self.grad_clip > 0:
             grad_norm = torch.nn.utils.clip_grad_norm_(self.network.parameters(), self.grad_clip)
             if grad_norm > self.grad_clip:
                 logging.info(
                     "Warning! Clip gradient from {} to {}".format(grad_norm, self.grad_clip)
                 )
-        scaler.step(self.optimizer_dict)
-        scaler.update()
+        
+        self.optimizers_step()
         batch = self._postprocess_after_optim(batch)
         batch = self._detach_before_return(batch)
         return batch
@@ -161,9 +164,9 @@ class ModelBase(object):
         return batch
 
     def zero_grad(self):
-        # for k in self.optimizer_dict.keys():
-        #     self.optimizer_dict[k].zero_grad()
-        self.optimizer_dict.zero_grad()
+        for k in self.optimizer_dict.keys():
+            self.optimizer_dict[k].zero_grad()
+        
 
     def optimizers_step(self, scaler):
         for k in self.optimizer_dict.keys():

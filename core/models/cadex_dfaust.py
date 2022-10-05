@@ -224,6 +224,10 @@ class ARAPBase(torch.nn.Module):
         raise NotImplementedError()
     
     def _loss_deform(self, query_arr_vertices, query_arr_triangles, canonical_arr):
+        print("Shape of query vertices:", query_arr_vertices.shape)
+        print("Shape of query triangles:", query_arr_triangles.shape)
+        print("Shape of canonical vertices:", canonical_arr.shape)
+
         E = 0
         for i in range(canonical_arr.shape[0]):
             canonical_arr_i = canonical_arr[i]
@@ -374,13 +378,24 @@ class CaDeX_DFAU(torch.nn.Module):
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
         
+        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/vertices.npz",points=seq_pc.cpu().detach().numpy())
+        # print("Saved the query space points")
+        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/faces.npz",faces=seq_triv.cpu().detach().numpy())
+        # print("Saved query space faces")
+        
+        # for i in range(inputs_cdc.shape[0]):
+        #     inputs_cdc_arr = inputs_cdc[i].cpu().detach().numpy()
+        #     np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/cdc_" + str(i) + ".npz",points=inputs_cdc_arr)
+        # print("Saved the cdc space coords")
+        
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
 
         
         # TODO : add ARAP loss by taking into consideration input_pack["inputs"] and inputs_cdc
-        # interp_energy = ArapInterpolationEnergy()
-        # arap_base = ARAPBase(interp_energy)
-        # arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
+        interp_energy = ArapInterpolationEnergy()
+        arap_base = ARAPBase(interp_energy)
+        
+        arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc.reshape(B,-1,3))
 
         # visualize
         if viz_flag:

@@ -18,7 +18,6 @@ from copy import deepcopy
 from core.models.utils.viz_cdc import viz_cdc
 from core.models.utils.oflow_eval.evaluator import MeshEvaluator
 from core.models.utils.oflow_common import eval_oflow_all, eval_iou
-# from core.models.utils_arap.arap_interpolation import ArapInterpolationEnergy
 from core.models.utils_arap.shape_utils import Shape
 from core.models.utils_arap.arap_potential import arap_energy_exact
 
@@ -444,10 +443,11 @@ class CaDeX_DFAU(torch.nn.Module):
         
         arap_base = ARAPBase()
         arap_loss_i = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
-        arap_loss = 0.05 * arap_loss_i.mean()
+        arap_loss = 0.1 * arap_loss_i
         
-        output["loss_arap"] = arap_loss
+        
         output["batch_loss"] += arap_loss
+        output["loss_arap"] = arap_loss.detach()
 
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()

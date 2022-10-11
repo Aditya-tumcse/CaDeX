@@ -18,8 +18,9 @@ from copy import deepcopy
 from core.models.utils.viz_cdc import viz_cdc
 from core.models.utils.oflow_eval.evaluator import MeshEvaluator
 from core.models.utils.oflow_common import eval_oflow_all, eval_iou
-from core.models.utils_arap.arap_interpolation import ArapInterpolationEnergy
+# from core.models.utils_arap.arap_interpolation import ArapInterpolationEnergy
 from core.models.utils_arap.shape_utils import Shape
+from core.models.utils_arap.arap_potential import arap_energy_exact
 
 
 
@@ -36,7 +37,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -206,51 +207,45 @@ class Model(ModelBase):
 
 
 class ARAPBase(torch.nn.Module):
-    def __init__(self, interp_energy):
+    def __init__(self):
         super().__init__()
-        self.interp_energy = interp_energy
+        #self.interp_energy = interp_energy
     
-    def _get_pred_single(self, shape_x):
-        raise NotImplementedError()
+    def get_neigh(self, triv):
+        neigh = torch.cat(
+            (triv[:, [0, 1]], triv[:, [0, 2]], triv[:, [1, 2]]), 0
+        )
 
-    def get_pred(self, shape_x_arr):
-        raise NotImplementedError()
+        return neigh.long()
 
-    # def compute_loss(self, query_arr_vertices, query_arr_triangles, canonical_arr):
-    #     E_arap = self._loss_deform(query_arr_vertices,query_arr_triangles, canonical_arr)
-    #     return E_arap
-
-    def forward(self, shape_x_arr):
-        raise NotImplementedError()
-    
-    def _loss_deform(self, query_arr_vertices, query_arr_triangles, canonical_arr):
-        print("Shape of query vertices:", query_arr_vertices.shape)
-        print("Shape of query triangles:", query_arr_triangles.shape)
-        print("Shape of canonical vertices:", canonical_arr.shape)
-
+    def _loss_deform(self, query_vertices, query_triangles, canonical):
         E = 0
-        for i in range(canonical_arr.shape[0]):
-            canonical_arr_i = canonical_arr[i]
-            E = E + self._loss_deform_single(query_arr_vertices[i],query_arr_triangles[i],canonical_arr_i)
+        neighbours = self.get_neigh(query_triangles[0][0])
+        
+        for i in range(canonical.shape[0]):
+            canonical_vert_batch = canonical[i] #Single batch of cdc coordinates
+            query_vert_batch_i = query_vertices[i] # Single batch of query space coords
+            
+            E = E + self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
         return E
     
-    def _loss_deform_single(self, query_vertices, query_faces, canonical_arr_i):
+    def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
        
         E_deform = 0.0
-        # ASK : we do not have different time step points for model in canonical space. We instead have it for shape_x
-        # TODO : Verify if this is proper
-        for i in range(17):
-            query_shape = Shape(query_vertices[i],query_faces[i])
-            E_x = self.interp_energy.forward_single(
-                query_vertices[i],canonical_arr_i , query_shape
+        
+        for i in range(query_vertices.shape[0]):
+            
+            E_x = arap_energy_exact(
+                canonical_vertices[i],query_vertices[i],neighbours
             )
-            E_y = self.interp_energy.forward_single(
-                canonical_arr_i, query_vertices[i], query_shape
+            E_y = arap_energy_exact(
+                query_vertices[i], canonical_vertices[i],neighbours
             )
 
             E_deform = E_deform + E_x + E_y
+        E_deform_avg = E_deform/query_vertices.shape[0]
 
-        return E_deform
+        return E_deform_avg
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):
@@ -378,25 +373,9 @@ class CaDeX_DFAU(torch.nn.Module):
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
         
-        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/vertices.npz",points=seq_pc.cpu().detach().numpy())
-        # print("Saved the query space points")
-        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/faces.npz",faces=seq_triv.cpu().detach().numpy())
-        # print("Saved query space faces")
-        
-        # for i in range(inputs_cdc.shape[0]):
-        #     inputs_cdc_arr = inputs_cdc[i].cpu().detach().numpy()
-        #     np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/cdc_" + str(i) + ".npz",points=inputs_cdc_arr)
-        # print("Saved the cdc space coords")
-        
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
 
         
-        # TODO : add ARAP loss by taking into consideration input_pack["inputs"] and inputs_cdc
-        interp_energy = ArapInterpolationEnergy()
-        arap_base = ARAPBase(interp_energy)
-        
-        arap_loss = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc.reshape(B,-1,3))
-
         # visualize
         if viz_flag:
             output["c_t"] = c_t.detach()
@@ -432,6 +411,7 @@ class CaDeX_DFAU(torch.nn.Module):
         reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
             occ_hat, input_pack["points.occ"], reduction="none"
         )
+        
         reconstruction_loss = reconstruction_loss_i.mean()
 
         # compute corr loss
@@ -453,9 +433,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         output["batch_loss"] = reconstruction_loss
 
-        #TODO : Add ARAP loss to batch loss
-        # output["loss_arap"] = arap_loss
-        # output["batch_loss"] += arap_loss
+        
 
         output["loss_recon"] = reconstruction_loss.detach()
         output["loss_recon_i"] = reconstruction_loss_i.detach().reshape(-1)
@@ -463,6 +441,14 @@ class CaDeX_DFAU(torch.nn.Module):
             output["batch_loss"] = output["batch_loss"] + corr_loss
             output["loss_corr"] = corr_loss.detach()
             output["loss_corr_i"] = corr_loss_i.detach().reshape(-1)
+        
+        arap_base = ARAPBase()
+        arap_loss_i = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
+        arap_loss = 0.05 * arap_loss_i.mean()
+        
+        output["loss_arap"] = arap_loss
+        output["batch_loss"] += arap_loss
+
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()
             output["batch_loss"] = (
@@ -473,6 +459,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         if phase.startswith("val"):  # add eval
             output["occ_hat_iou"] = pr.probs
+        
 
         return output
 

@@ -5,10 +5,8 @@
 
 import torch.nn.functional
 from core.models.utils_arap.base_tools import *
-import numpy as np
-#from param import *
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 def arap_exact(vert_diff_cdc, vert_diff_query, neigh, n_vert):
     S_neigh = torch.bmm(vert_diff_cdc.unsqueeze(2),vert_diff_query.unsqueeze(1))
     
@@ -17,10 +15,7 @@ def arap_exact(vert_diff_cdc, vert_diff_query, neigh, n_vert):
     S = torch.index_add(S, 0, neigh[:, 0], S_neigh)
     S = torch.index_add(S, 0, neigh[:, 1], S_neigh)
 
-    U, _, V = torch.svd(S.cpu(), compute_uv=True)
-
-    U = U.to(device)
-    V = V.to(device)
+    U, _, V = torch.svd(S, compute_uv=True)
 
     R = torch.bmm(U, V.transpose(1, 2))
 

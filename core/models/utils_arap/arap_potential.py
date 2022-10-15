@@ -5,6 +5,7 @@
 
 import torch.nn.functional
 from core.models.utils_arap.base_tools import *
+import time
 
 
 def arap_exact(vert_diff_cdc, vert_diff_query, neigh, n_vert):
@@ -14,16 +15,17 @@ def arap_exact(vert_diff_cdc, vert_diff_query, neigh, n_vert):
 
     S = torch.index_add(S, 0, neigh[:, 0], S_neigh)
     S = torch.index_add(S, 0, neigh[:, 1], S_neigh)
-
+    
+    # Kabsch algorithm
     U, _, V = torch.svd(S, compute_uv=True)
-
+    
     R = torch.bmm(U, V.transpose(1, 2))
-
+    
     Sigma = my_ones((R.shape[0], 1, 3))
     Sigma[:, :, 2] = torch.det(R).unsqueeze(1)
 
     R = torch.bmm(U * Sigma, V.transpose(1, 2))
-
+    
     return R
 
 
@@ -47,7 +49,8 @@ def arap_energy_exact(vert_cdc, vert_query, neigh, lambda_reg_len=1e-6):
     acc_t_neigh = vert_diff_cdc - vert_diff_query_rot # Minimize the difference between deformed coords and original coords
 
     E_arap = acc_t_neigh.norm() ** 2 + lambda_reg_len * (vert_cdc - vert_query).norm() ** 2
-
+    E_arap = 0.1 * E_arap
+  
     return E_arap
 
 

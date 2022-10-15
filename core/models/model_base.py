@@ -223,6 +223,7 @@ class ModelBase(object):
             self.__dataparallel_flag__ = True
         else:
             self.__dataparallel_flag__ = False
+        
         self.network.cuda()
 
     def set_train(self):

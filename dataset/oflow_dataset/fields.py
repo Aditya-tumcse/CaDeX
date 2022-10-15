@@ -695,20 +695,18 @@ class MeshField(Field):
         mesh_vertices_seq = []
         mesh_face_seq = []
 
-
         for f in mesh_files:
             data = np.load(f)
             vertices = data['points']
             triangles = data['triangles']
-
+            
             mesh_vertices_seq.append(vertices)
             mesh_face_seq.append(triangles)
-            
 
         data = {
             "vertices": np.stack(mesh_vertices_seq),
             "triangles": np.stack(mesh_face_seq),
-            "time": self.get_time_values(),
+            "time": self.get_time_values()
         }
 
         return data

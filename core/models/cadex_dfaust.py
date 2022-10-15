@@ -220,31 +220,44 @@ class ARAPBase(torch.nn.Module):
     def _loss_deform(self, query_vertices, query_triangles, canonical):
         E = 0
         neighbours = self.get_neigh(query_triangles[0][0])
-        
+        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/cdc.npz",points=canonical.cpu().detach().numpy(), faces=query_triangles.cpu().detach().numpy())
+        # print("Saving cdc shape complete")
+        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/query.npz",points=query_vertices.cpu().detach().numpy(), faces=query_triangles.cpu().detach().numpy())
+        # print("Saving query shape complete")
+
         for i in range(canonical.shape[0]):
             canonical_vert_batch = canonical[i] #Single batch of cdc coordinates
             query_vert_batch_i = query_vertices[i] # Single batch of query space coords
             
+
             E = E + self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
         return E
     
     def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
        
         E_deform = 0.0
-        
+        #E_deform_list = torch.zeros(query_vertices.shape[0])
+        E_deform_list = []
         for i in range(query_vertices.shape[0]):
+           
+            # E_x = arap_energy_exact( 
+            #     canonical_vertices[i],query_vertices[i],neighbours
+            # )
             
-            E_x = arap_energy_exact(
-                canonical_vertices[i],query_vertices[i],neighbours
-            )
             E_y = arap_energy_exact(
                 query_vertices[i], canonical_vertices[i],neighbours
             )
 
-            E_deform = E_deform + E_x + E_y
-        E_deform_avg = E_deform/query_vertices.shape[0]
-
-        return E_deform_avg
+            #E_deform = E_deform + E_x + E_y
+            if torch.isnan(E_y) ==  False:
+                E_deform_list.append(E_y)
+        
+            #print(E_deform_list[i])
+            #print("ARAP Energy:",E_deform_list[i])
+        #E_deform_avg = E_deform/query_vertices.shape[0]
+        E_deform_tensor = torch.tensor(E_deform_list)
+        E_deform_mean = torch.mean(E_deform_tensor)
+        return E_deform_mean.cuda()
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):
@@ -410,7 +423,7 @@ class CaDeX_DFAU(torch.nn.Module):
         reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
             occ_hat, input_pack["points.occ"], reduction="none"
         )
-        
+
         reconstruction_loss = reconstruction_loss_i.mean()
 
         # compute corr loss
@@ -431,7 +444,7 @@ class CaDeX_DFAU(torch.nn.Module):
             corr_loss = corr_loss_i.mean()
 
         output["batch_loss"] = reconstruction_loss
-
+        
         
 
         output["loss_recon"] = reconstruction_loss.detach()
@@ -441,14 +454,17 @@ class CaDeX_DFAU(torch.nn.Module):
             output["loss_corr"] = corr_loss.detach()
             output["loss_corr_i"] = corr_loss_i.detach().reshape(-1)
         
+        
         arap_base = ARAPBase()
         arap_loss_i = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
-        arap_loss = 0.1 * arap_loss_i
+       
         
-        
-        output["batch_loss"] += arap_loss
-        output["loss_arap"] = arap_loss.detach()
+        arap_loss_mean = arap_loss_i.mean()
 
+        output["batch_loss"] += arap_loss_mean
+        
+        output["loss_arap"] = arap_loss_mean.detach()
+        
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()
             output["batch_loss"] = (

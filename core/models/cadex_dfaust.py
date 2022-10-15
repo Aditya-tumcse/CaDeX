@@ -234,9 +234,6 @@ class ARAPBase(torch.nn.Module):
         return E
     
     def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
-       
-        E_deform = 0.0
-        #E_deform_list = torch.zeros(query_vertices.shape[0])
         E_deform_list = []
         for i in range(query_vertices.shape[0]):
            
@@ -248,13 +245,9 @@ class ARAPBase(torch.nn.Module):
                 query_vertices[i], canonical_vertices[i],neighbours
             )
 
-            #E_deform = E_deform + E_x + E_y
             if torch.isnan(E_y) ==  False:
                 E_deform_list.append(E_y)
         
-            #print(E_deform_list[i])
-            #print("ARAP Energy:",E_deform_list[i])
-        #E_deform_avg = E_deform/query_vertices.shape[0]
         E_deform_tensor = torch.tensor(E_deform_list)
         E_deform_mean = torch.mean(E_deform_tensor)
         return E_deform_mean.cuda()

@@ -111,7 +111,6 @@ class HumansDataset(data.Dataset):
         for field_name, field in self.fields.items():
             _f_start_t = time.time()
             try:
-                
                 field_data = field.load(model_path,idx, c_idx, start_idx)
                 debug_info += "[{} l{:.2f}".format(field_name, time.time() - _f_start_t)
             except Exception:

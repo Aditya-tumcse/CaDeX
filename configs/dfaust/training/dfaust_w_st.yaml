@@ -33,10 +33,10 @@ model:
     explicit_affine: False
 
 dataset:
-  pin_mem: False
+  pin_mem: true
   dataset_name: oflow_data
   dataset_proportion: [1.0, 1.0] #  [0.1, 0.1]
-  num_workers: 2
+  num_workers: 1
   n_query_sample_eval: 10000
   n_training_frames: 8
   oflow_config:
@@ -69,7 +69,7 @@ dataset:
     offset_sequence: 15
     n_files_per_sequence: -1
     points_file: points.npz
-    mesh_seq_folder: mesh_seq_downsampled
+    mesh_seq_folder: mesh_registered
     points_iou_seq_folder: points_seq
     pointcloud_seq_folder: pcl_seq
     img_seq_folder: img
@@ -77,6 +77,7 @@ dataset:
 
 training:
   grad_clip: 4.0
+  clear_phase_cache: true
   optim:
     all:
       lr: 0.0001
@@ -85,7 +86,7 @@ training:
       lr_min: 0.00000001
 
   total_epoch: 200000
-  batch_size: 1 # for 2x2080ti, but we use bs=20 for 2x v100
+  batch_size: 4 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
   eval_every_epoch: 10
@@ -94,7 +95,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_3
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_ARAP
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

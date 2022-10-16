@@ -14,8 +14,8 @@ class ArapInterpolationEnergy(InterpolationEnergyHessian):
         super().__init__()
 
     # override
-    def forward_single(self, vert_new, vert_ref, shape_i):
-        E_arap = arap_energy_exact(vert_new, vert_ref, shape_i.get_neigh())
+    def forward_single(self, vert_new, vert_ref, neighbours):
+        E_arap = arap_energy_exact(vert_new, vert_ref, neighbours)
         return E_arap
 
     # override

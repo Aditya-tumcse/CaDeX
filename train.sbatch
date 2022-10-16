@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=CaDeX_exp_4
+#SBATCH --job-name=CaDeX_exp_ARAP
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
-#SBATCH --gres=gpu:2,VRAM:24GB
-#SBATCH --mem=32GB
+#SBATCH --gres=gpu:2,VRAM:50GB
+#SBATCH --mem=256GB
 #SBATCH --time=336:00:00
 
 module load cuda/11.0

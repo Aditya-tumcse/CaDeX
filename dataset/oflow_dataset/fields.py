@@ -160,7 +160,6 @@ class PointsSubseqField(Field):
         ]
         files.sort()
         files = files[start_idx : start_idx + self.seq_len]
-
         return files
 
     def load_all_steps(self, files, points_dict, loc0, scale0):
@@ -300,7 +299,7 @@ class PointsSubseqField(Field):
         }
         return data
 
-    def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
+    def load(self, model_path, idx, c_idx=None, start_idx=0,**kwargs):
         """Loads the points subsequence field.
 
         Args:
@@ -677,7 +676,7 @@ class MeshField(Field):
         return time
 
 
-    def load(self, model_path, idx, c_idx=None, start_idx=0, **kwargs):
+    def load(self, model_path, idx, c_idx=None, start_idx=0,**kwargs):
         """Loads the point cloud sequence field.
 
         Args:
@@ -690,8 +689,8 @@ class MeshField(Field):
         folder = os.path.join(model_path, self.folder_name)
         mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
         mesh_files.sort()
-        
         mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
+       
         mesh_vertices_seq = []
         mesh_face_seq = []
 

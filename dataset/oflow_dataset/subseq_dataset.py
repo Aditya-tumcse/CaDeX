@@ -101,7 +101,9 @@ class HumansDataset(data.Dataset):
         c_idx = self.metadata[category]["idx"]
 
         model_path = os.path.join(self.dataset_folder, category, model)
-
+        # number_of_files = os.listdir(os.path.join(model_path, "mesh_registered"))
+        # file_indices = list(np.arange(len(number_of_files)))
+        # required_file_indices = random.sample(file_indices,k=17)
         _prepare_t = time.time() - _start_t
         data = {}
 
@@ -109,7 +111,8 @@ class HumansDataset(data.Dataset):
         for field_name, field in self.fields.items():
             _f_start_t = time.time()
             try:
-                field_data = field.load(model_path, idx, c_idx, start_idx)
+                
+                field_data = field.load(model_path,idx, c_idx, start_idx)
                 debug_info += "[{} l{:.2f}".format(field_name, time.time() - _f_start_t)
             except Exception:
                 if self.no_except:

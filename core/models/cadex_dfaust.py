@@ -217,24 +217,36 @@ class ARAPBase(torch.nn.Module):
 
         return neigh.long()
 
+    def dist_mat(self, x, y, inplace=False):
+        d = torch.mm(x, y.transpose(0, 1))
+        v_x = torch.sum(x ** 2, 1).unsqueeze(1)
+        v_y = torch.sum(y ** 2, 1).unsqueeze(0)
+        d *= -2
+        if inplace:
+            d += v_x
+            d += v_y
+        else:
+            d = d + v_x
+            d = d + v_y
+
+        return d
+
     def _loss_deform(self, query_vertices, query_triangles, canonical):
         E = 0
         neighbours = self.get_neigh(query_triangles[0][0])
-        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/cdc.npz",points=canonical.cpu().detach().numpy(), faces=query_triangles.cpu().detach().numpy())
-        # print("Saving cdc shape complete")
-        # np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/query.npz",points=query_vertices.cpu().detach().numpy(), faces=query_triangles.cpu().detach().numpy())
-        # print("Saving query shape complete")
-
+       
         for i in range(canonical.shape[0]):
             canonical_vert_batch = canonical[i] #Single batch of cdc coordinates
             query_vert_batch_i = query_vertices[i] # Single batch of query space coords
             
 
-            E = E + self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
+            E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
+            E = E + E_arap + E_mds
         return E
     
     def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
         E_deform_list = []
+        E_mds_list = []
         for i in range(query_vertices.shape[0]):
            
             # E_x = arap_energy_exact( 
@@ -247,10 +259,22 @@ class ARAPBase(torch.nn.Module):
 
             if torch.isnan(E_y) ==  False:
                 E_deform_list.append(E_y)
-        
+            
+            query_D = self.dist_mat(query_vertices[i],query_vertices[i])
+            cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i])
+            E_mds = 0.1 * ((cdc_D - query_D**2) ** 2).mean()
+
+            if torch.isnan(E_mds) == False:
+                E_mds_list.append(E_mds)
+
         E_deform_tensor = torch.tensor(E_deform_list)
         E_deform_mean = torch.mean(E_deform_tensor)
-        return E_deform_mean.cuda()
+
+        E_mds_tensor = torch.tensor(E_mds_list)
+        print("List of E_mds:", E_mds_tensor)
+        E_mds_mean = torch.mean(E_mds_tensor)
+        
+        return E_deform_mean.cuda(), E_mds_mean.cuda()
 
 class CaDeX_DFAU(torch.nn.Module):
     def __init__(self, cfg):

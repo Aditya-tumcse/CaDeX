@@ -249,14 +249,11 @@ class ARAPBase(torch.nn.Module):
         E_mds_list = []
         for i in range(query_vertices.shape[0]):
            
-            # E_x = arap_energy_exact( 
-            #     canonical_vertices[i],query_vertices[i],neighbours
-            # )
-            
             E_y = arap_energy_exact(
                 query_vertices[i], canonical_vertices[i],neighbours
             )
 
+            
             if torch.isnan(E_y) ==  False:
                 E_deform_list.append(E_y)
             
@@ -271,7 +268,6 @@ class ARAPBase(torch.nn.Module):
         E_deform_mean = torch.mean(E_deform_tensor)
 
         E_mds_tensor = torch.tensor(E_mds_list)
-        print("List of E_mds:", E_mds_tensor)
         E_mds_mean = torch.mean(E_mds_tensor)
         
         return E_deform_mean.cuda(), E_mds_mean.cuda()

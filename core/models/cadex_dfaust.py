@@ -1,5 +1,6 @@
 from .model_base import ModelBase
 import torch
+import time
 
 import copy
 
@@ -35,8 +36,9 @@ class Model(ModelBase):
         for t in range(T):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
-        self.output_specs = {
-            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap","iou", "rec_error"] ## add loss_arap after loss_corr to log arap loss
+        self.output_specs = {""
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_deforms"
+            ,"iou", "rec_error"] ## add loss_deform after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
             "image": ["mesh_viz_image"],
@@ -241,6 +243,7 @@ class ARAPBase(torch.nn.Module):
             
 
             E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
+            #E_arap = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours)
             E = E + E_arap + E_mds
         return E
     
@@ -257,8 +260,8 @@ class ARAPBase(torch.nn.Module):
             if torch.isnan(E_y) ==  False:
                 E_deform_list.append(E_y)
             
-            query_D = self.dist_mat(query_vertices[i],query_vertices[i])
-            cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i])
+            query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
+            cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
             E_mds = 0.1 * ((cdc_D - query_D**2) ** 2).mean()
 
             if torch.isnan(E_mds) == False:
@@ -378,6 +381,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
     def forward(self, input_pack, viz_flag):
         output = {}
+        
         phase = input_pack["phase"]
 
         seq_t, seq_pc, seq_triv = (
@@ -393,13 +397,14 @@ class CaDeX_DFAU(torch.nn.Module):
             c_t = c_t.reshape(B, T, -1) #Deformation embedding for a query space
         else:
             _, c_t = self.network_dict["homeomorphism_encoder"](seq_pc)  # B,C; B,T,C
-
+           
         # tranform observation to CDC and encode canonical geometry
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
         
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
-
+        
+        
         
         # visualize
         if viz_flag:
@@ -421,17 +426,22 @@ class CaDeX_DFAU(torch.nn.Module):
             c_t, dim=1, index=idx.unsqueeze(2).expand(-1, -1, c_t.shape[-1])
         ).transpose(
             2, 1
-        )  # B,C,T
+        )  # B,C,T (2,128,17)
 
+      
         # transform to canonical frame
         cdc, uncompressed_cdc = self.map2canonical(
             c_homeomorphism, input_pack["points"], return_uncompressed=True
-        )  # B,T,N,3
+        )  # B,T,N,3 (2,17,6890,3)
+        
+        
         
         shift = (uncompressed_cdc - input_pack["points"]).norm(dim=3)
-
+        
         # reconstruct in canonical space
         pr = self.decode_by_cdc(observation_c=c_g, query=cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
+        
+
         occ_hat = pr.probs #occupancy field in canonical space
         reconstruction_loss_i = torch.nn.functional.binary_cross_entropy(
             occ_hat, input_pack["points.occ"], reduction="none"
@@ -443,7 +453,7 @@ class CaDeX_DFAU(torch.nn.Module):
         if self.use_corr_loss:
             _, cdc_first_frame_un = self.map2canonical(
                 c_t[:, 0].unsqueeze(2),
-                input_pack["pointcloud.vertices"][:, 0].unsqueeze(1),
+                input_pack["inputs.vertices"][:, 0].unsqueeze(1),
                 return_uncompressed=True,
             )  # B,1,M,3
             cdc_forward_frames = self.map2current(
@@ -452,7 +462,7 @@ class CaDeX_DFAU(torch.nn.Module):
                 compressed=False,
             )
             corr_loss_i = torch.abs(
-                cdc_forward_frames - input_pack["pointcloud.vertices"][:, 1:].detach()
+                cdc_forward_frames - input_pack["inputs.vertices"][:, 1:].detach()
             ).sum(-1)
             corr_loss = corr_loss_i.mean()
 
@@ -468,15 +478,15 @@ class CaDeX_DFAU(torch.nn.Module):
             output["loss_corr_i"] = corr_loss_i.detach().reshape(-1)
         
         
-        arap_base = ARAPBase()
-        arap_loss_i = arap_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
+        deform_base = ARAPBase()
+        deform_loss_i = deform_base._loss_deform(seq_pc,seq_triv,inputs_cdc)
        
         
-        arap_loss_mean = arap_loss_i.mean()
+        deform_loss_mean = deform_loss_i.mean()
 
-        output["batch_loss"] += arap_loss_mean
+        output["batch_loss"] += deform_loss_mean
         
-        output["loss_arap"] = arap_loss_mean.detach()
+        output["loss_deform"] = deform_loss_mean.detach()
         
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()
@@ -508,7 +518,7 @@ class CaDeX_DFAU(torch.nn.Module):
         logits = self.network_dict["canonical_geometry_decoder"](
             query, None, observation_c
         ).reshape(B, T, N)
-
+        
         return dist.Bernoulli(logits=logits)
         
 

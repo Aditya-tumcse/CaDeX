@@ -401,6 +401,8 @@ class CaDeX_DFAU(torch.nn.Module):
         # tranform observation to CDC and encode canonical geometry
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
+        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/query.npz",points=input_pack["inputs.vertices"].cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
+        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/query.npz",points=inputs_cdc.cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
         
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
         

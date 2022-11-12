@@ -178,7 +178,7 @@ def get_data_fields(mode, cfg):
     pts_iou_field = oflow_dataset.PointsSubseqField
     pts_corr_field = oflow_dataset.PointCloudSubseqField
 
-    # MeshSubseqField can be used to load mesh fields
+   
 
     if "not_choose_last" in cfg["dataset"].keys():
         not_choose_last = cfg["dataset"]["not_choose_last"]
@@ -345,7 +345,7 @@ def get_inputs_field(mode, cfg):
             seq_len=seq_len,
             use_multi_files=training_multi_files,
         )
-    #TODO : get inputs fields for mesh sequence
+    
     elif input_type == "mesh_seq":
         
         # transform = transforms.Compose(

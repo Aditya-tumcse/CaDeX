@@ -36,7 +36,7 @@ dataset:
   pin_mem: true
   dataset_name: oflow_data
   dataset_proportion: [0.4, 0.4] #  [0.1, 0.1]
-  num_workers: 4
+  num_workers: 1
   n_query_sample_eval: 10000
   n_training_frames: 8
   oflow_config:
@@ -65,7 +65,7 @@ dataset:
     img_size: 224
     img_with_camera: false
     img_augment: false
-    length_sequence: 17
+    length_sequence: 4
     offset_sequence: 15
     n_files_per_sequence: -1
     points_file: points.npz
@@ -95,7 +95,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_default
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

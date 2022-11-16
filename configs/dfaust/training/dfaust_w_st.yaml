@@ -6,7 +6,7 @@ model:
   model_name: cadex_dfaust
 
   loss_recon: true
-  loss_corr: true
+  loss_corr: false
 
   compress_cdc: true # the cdc is compressed by a sigmoid
 
@@ -95,7 +95,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_vanilla
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_mds_arap_new
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

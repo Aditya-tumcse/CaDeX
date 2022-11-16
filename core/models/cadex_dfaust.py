@@ -388,7 +388,7 @@ class CaDeX_DFAU(torch.nn.Module):
       
     def downsample_points(self, points):
         downsampled_vertices = np.zeros((points.shape[0], 8, 512, points.shape[3]))
-
+        torch.cuda.empty_cache()
         for i in range(points.shape[0]):
             downsampled_points_list = []
             for j in range(points.shape[1]):
@@ -463,7 +463,8 @@ class CaDeX_DFAU(torch.nn.Module):
         
         shift = (uncompressed_cdc - input_pack["inputs.vertices"]).norm(dim=3)
         downsampled_cdc = self.downsample_points(cdc)
-       
+        
+
         # reconstruct in canonical space
         pr = self.decode_by_cdc(observation_c=c_g, query=downsampled_cdc.float()) #Reconstructing using the OccNet in canonical deformation coordinate space
         
@@ -474,7 +475,7 @@ class CaDeX_DFAU(torch.nn.Module):
         )
 
         reconstruction_loss = reconstruction_loss_i.mean()
-      
+        
         # compute corr loss
         if self.use_corr_loss:
             _, cdc_first_frame_un = self.map2canonical(
@@ -488,7 +489,6 @@ class CaDeX_DFAU(torch.nn.Module):
                 cdc_first_frame_un.expand(-1, T - 1, -1, -1),
                 compressed=False,
             )
-            print("Done")
             corr_loss_i = torch.abs(
                 cdc_forward_frames - input_pack["inputs.vertices"][:, 1:].detach()
             ).sum(-1)

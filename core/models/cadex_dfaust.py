@@ -267,10 +267,10 @@ class ARAPBase(torch.nn.Module):
             query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
             cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
         
-            E_mds = 0.1 * ((cdc_D - query_D) ** 2).mean()
+            E_mds = ((cdc_D - query_D) ** 2).mean()
 
             if torch.isnan(E_mds) == False:
-                E_mds_list.append(E_mds)
+                E_mds_list.append(E_mds * 0.1)
 
         E_deform_tensor = torch.tensor(E_deform_list)
         E_deform_mean = torch.mean(E_deform_tensor)
@@ -386,22 +386,7 @@ class CaDeX_DFAU(torch.nn.Module):
         )
         return coordinates.transpose(2, 1)  # B,T,N,3
       
-    def downsample_points(self, points):
-        downsampled_vertices = np.zeros((points.shape[0], 8, 512, points.shape[3]))
-        torch.cuda.empty_cache()
-        for i in range(points.shape[0]):
-            downsampled_points_list = []
-            for j in range(points.shape[1]):
-                pcd_points = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(points[i][j].cpu().detach().numpy()))
-                downsampled_pcd = pcd_points.uniform_down_sample(13)
-                downsampled_points_list.append(np.asarray(downsampled_pcd.points))
-            
-            new_points = np.hstack(downsampled_points_list).reshape(points.shape[1],-1,points.shape[3])
-            downsampled_vertices[i] = new_points[0:8,0:512,:]
-        
-        downsampled_vertices_tensor = torch.from_numpy(downsampled_vertices)
-        return downsampled_vertices_tensor.cuda()
-
+    
     def forward(self, input_pack, viz_flag):
         output = {}
         
@@ -424,12 +409,10 @@ class CaDeX_DFAU(torch.nn.Module):
         # tranform observation to CDC and encode canonical geometry
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
-        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/mds_arap/query.npz",points=input_pack["inputs.vertices"].cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
-        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/mds_arap/cdc.npz",points=inputs_cdc.cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
+        #np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/mds_arap/query.npz",points=input_pack["inputs.vertices"].cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
+        #np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/mds_arap/cdc.npz",points=inputs_cdc.cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
         
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
-        
-        
         
         # visualize
         if viz_flag:
@@ -569,3 +552,19 @@ class CaDeX_DFAU(torch.nn.Module):
         logits = self.decode_by_cdc(observation_c=c_g, query=cdc).logits
         pr = dist.Bernoulli(logits=logits.squeeze(1))
         return pr
+
+    def downsample_points(self, points):
+        downsampled_vertices = np.zeros((points.shape[0], 8, 512, points.shape[3]))
+        torch.cuda.empty_cache()
+        for i in range(points.shape[0]):
+            downsampled_points_list = []
+            for j in range(points.shape[1]):
+                pcd_points = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(points[i][j].cpu().detach().numpy()))
+                downsampled_pcd = pcd_points.uniform_down_sample(13)
+                downsampled_points_list.append(np.asarray(downsampled_pcd.points))
+            
+            new_points = np.hstack(downsampled_points_list).reshape(points.shape[1],-1,points.shape[3])
+            downsampled_vertices[i] = new_points[0:8,0:512,:]
+        
+        downsampled_vertices_tensor = torch.from_numpy(downsampled_vertices)
+        return downsampled_vertices_tensor.cuda()

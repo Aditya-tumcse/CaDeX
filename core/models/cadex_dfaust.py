@@ -418,7 +418,7 @@ class CaDeX_DFAU(torch.nn.Module):
         
         # visualize
         if viz_flag:
-            print("Second",viz_flag)
+           
             output["c_t"] = c_t.detach()
             output["c_g"] = c_g.detach()
             output["seq_t"] = seq_t.detach()
@@ -432,7 +432,7 @@ class CaDeX_DFAU(torch.nn.Module):
             return output
 
         # get deformation condition for traning steps
-        idx = (input_pack["inputs.time"] * (seq_t.shape[1] - 1)).long()  # B,t
+        idx = (input_pack["points.time"] * (seq_t.shape[1] - 1)).long()  # B,t
         c_homeomorphism = torch.gather(
             c_t, dim=1, index=idx.unsqueeze(2).expand(-1, -1, c_t.shape[-1])
         ).transpose(
@@ -442,17 +442,16 @@ class CaDeX_DFAU(torch.nn.Module):
       
         # transform to canonical frame
         cdc, uncompressed_cdc = self.map2canonical(
-            c_homeomorphism, input_pack["inputs.vertices"], return_uncompressed=True
+            c_homeomorphism, input_pack["points"], return_uncompressed=True
         )  # B,T,N,3 (2,17,6890,3)
         
         
         
-        shift = (uncompressed_cdc - input_pack["inputs.vertices"]).norm(dim=3)
-        downsampled_cdc = self.downsample_points(cdc)
+        shift = (uncompressed_cdc - input_pack["points"]).norm(dim=3)
         
 
         # reconstruct in canonical space
-        pr = self.decode_by_cdc(observation_c=c_g, query=downsampled_cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
+        pr = self.decode_by_cdc(observation_c=c_g, query=cdc) #Reconstructing using the OccNet in canonical deformation coordinate space
         
 
         occ_hat = pr.probs #occupancy field in canonical space

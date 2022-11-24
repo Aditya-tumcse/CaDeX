@@ -38,7 +38,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {""
-            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap"
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_deform"
             ,"iou", "rec_error"] ## add loss_deform after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
@@ -245,11 +245,11 @@ class ARAPBase(torch.nn.Module):
             query_vert_batch_i = query_vertices[i] # Single batch of query space coords
             
 
-            #E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
-            E_arap = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours)
-            E = E + E_arap
-            #E = E + E_arap + E_mds
-        
+            E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
+            E = E + E_arap + E_mds
+
+            # E_arap = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours)
+            # E = E + E_arap
         return E
     
     def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
@@ -266,21 +266,22 @@ class ARAPBase(torch.nn.Module):
             if torch.isnan(E_y) ==  False:
                 E_deform_list.append(E_y)
             
-            # query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
-            # cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
+           
+            query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
+            cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
         
-            # E_mds = 0.1 * ((cdc_D - query_D**2) ** 2).mean()
+            E_mds = 0.1 * ((cdc_D - query_D) ** 2).mean()
 
-            # if torch.isnan(E_mds) == False:
-            #     E_mds_list.append(E_mds)
+            if torch.isnan(E_mds) == False:
+                E_mds_list.append(E_mds)
 
         E_deform_tensor = torch.tensor(E_deform_list)
         E_deform_mean = torch.mean(E_deform_tensor)
 
-        # E_mds_tensor = torch.tensor(E_mds_list)
-        # E_mds_mean = torch.mean(E_mds_tensor)
+        E_mds_tensor = torch.tensor(E_mds_list)
+        E_mds_mean = torch.mean(E_mds_tensor)
         
-        return E_deform_mean.cuda()#, E_mds_mean.cuda()
+        return E_deform_mean.cuda(), E_mds_mean.cuda()
         
       
 
@@ -411,8 +412,8 @@ class CaDeX_DFAU(torch.nn.Module):
         # tranform observation to CDC and encode canonical geometry
         # inputs_cdc gives the shape in canonical coordinate system as shown in the paper as Canonical_Obs.
         inputs_cdc = self.map2canonical(c_t.transpose(2, 1), input_pack["inputs.vertices"])  # B,T,N,3 #inputs_cdc are the points in the canonical deformation space for each input
-        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/arap/query.npz",points=input_pack["inputs.vertices"].cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
-        np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/arap/cdc.npz",points=inputs_cdc.cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
+        #np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/arap/query.npz",points=input_pack["inputs.vertices"].cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
+        #np.savez("/usr/stud/srinivaa/code/new_CaDeX/CaDeX/external_results/arap/cdc.npz",points=inputs_cdc.cpu().detach().numpy(),faces=input_pack["inputs.triangles"].cpu().detach().numpy())
         
         c_g = self.network_dict["canonical_geometry_encoder"](inputs_cdc.reshape(B, -1, 3)) # PointNet to encode the points in the canonical space.Change the dimesnion such that there are 3 columns.
         
@@ -499,7 +500,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         output["batch_loss"] += deform_loss_mean
         
-        output["loss_arap"] = deform_loss_mean.detach()
+        output["loss_deform"] = deform_loss_mean.detach()
         
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()

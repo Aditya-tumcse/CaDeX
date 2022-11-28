@@ -85,7 +85,7 @@ training:
       decay_factor: [0.3, 0.3, 0.3]
       lr_min: 0.00000001
 
-  total_epoch: 200000
+  total_epoch: 50
   batch_size: 4 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
@@ -95,7 +95,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_arap_alone
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_arap_mds
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=CaDeX_arap_mds
+#SBATCH --job-name=CaDeX_arap_alone
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:2,VRAM:48GB

@@ -38,7 +38,7 @@ class Model(ModelBase):
             eval_metric += ["iou_t%d" % t]
             viz_mesh += ["mesh_t%d" % t]
         self.output_specs = {""
-            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_deform"
+            "metric": ["batch_loss", "loss_recon", "loss_corr","loss_arap"
             ,"iou", "rec_error"] ## add loss_deform after loss_corr to log arap loss
             + eval_metric
             + ["loss_reg_shift_len"],
@@ -245,16 +245,16 @@ class ARAPBase(torch.nn.Module):
             query_vert_batch_i = query_vertices[i] # Single batch of query space coords
             
 
-            E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
-            E = E + E_arap + E_mds
+            # E_arap,E_mds = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours) # Send in batch wise
+            # E = E + E_arap + E_mds
 
-            # E_arap = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours)
-            # E = E + E_arap
+            E_arap = self._loss_deform_single(query_vert_batch_i,canonical_vert_batch,neighbours)
+            E = E + E_arap
         return E
     
     def _loss_deform_single(self, query_vertices, canonical_vertices, neighbours):
         E_deform_list = []
-        E_mds_list = []
+        #E_mds_list = []
         torch.cuda.empty_cache()
         for i in range(query_vertices.shape[0]):
            
@@ -267,21 +267,21 @@ class ARAPBase(torch.nn.Module):
                 E_deform_list.append(E_y)
             
            
-            query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
-            cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
+            # query_D = self.dist_mat(query_vertices[i],query_vertices[i],inplace=True)
+            # cdc_D = self.dist_mat(canonical_vertices[i],canonical_vertices[i],inplace=True)
         
-            E_mds = 0.1 * ((cdc_D - query_D) ** 2).mean()
+            # E_mds = 0.1 * ((cdc_D - query_D) ** 2).mean()
 
-            if torch.isnan(E_mds) == False:
-                E_mds_list.append(E_mds)
+            # if torch.isnan(E_mds) == False:
+            #     E_mds_list.append(E_mds)
 
         E_deform_tensor = torch.tensor(E_deform_list)
         E_deform_mean = torch.mean(E_deform_tensor)
 
-        E_mds_tensor = torch.tensor(E_mds_list)
-        E_mds_mean = torch.mean(E_mds_tensor)
+        # E_mds_tensor = torch.tensor(E_mds_list)
+        # E_mds_mean = torch.mean(E_mds_tensor)
         
-        return E_deform_mean.cuda(), E_mds_mean.cuda()
+        return E_deform_mean.cuda()#, E_mds_mean.cuda()
         
       
 
@@ -500,7 +500,7 @@ class CaDeX_DFAU(torch.nn.Module):
 
         output["batch_loss"] += deform_loss_mean
         
-        output["loss_deform"] = deform_loss_mean.detach()
+        output["loss_arap"] = deform_loss_mean.detach()
         
         if self.regularize_shift_len > 0.0:  # shift len loss
             regularize_shift_len_loss = shift.mean()

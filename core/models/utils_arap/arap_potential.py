@@ -49,7 +49,7 @@ def arap_energy_exact(vert_cdc, vert_query, neigh, lambda_reg_len=1e-6):
     acc_t_neigh = vert_diff_cdc - vert_diff_query_rot # Minimize the difference between deformed coords and original coords
 
     E_arap = acc_t_neigh.norm() ** 2 + lambda_reg_len * (vert_cdc - vert_query).norm() ** 2
-    E_arap = 0.1 * E_arap
+    E_arap = 0.01 * E_arap
   
     return E_arap
 

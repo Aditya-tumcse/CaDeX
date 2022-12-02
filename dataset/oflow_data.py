@@ -176,7 +176,7 @@ def get_data_fields(mode, cfg):
 
     # Fields
     pts_iou_field = oflow_dataset.PointsSubseqField
-    pts_corr_field = oflow_dataset.PointCloudSubseqField
+    pts_corr_field = oflow_dataset.PointCloudField
 
    
 
@@ -237,7 +237,7 @@ def get_data_fields(mode, cfg):
         fields[
             "points_mesh"
         ] = pts_corr_field(  # ? this if for correspondence? Checked, this is for chamfer distance, make sure that because here we use tranforms, teh pts in config file must be 100000
-            pcl_folder, transform=transf_pcl_val, seq_len=seq_len_val
+            mesh_folder, seq_len=seq_len_val
         )
     # Connectivity Loss:
     if cfg["model"]["loss_corr"]:

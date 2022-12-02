@@ -6,6 +6,7 @@
 #SBATCH --gres=gpu:2,VRAM:48GB
 #SBATCH --mem=256GB
 #SBATCH --time=240:00:00
+#SBATCH --exclude=node17
 
 module load cuda/11.0
 cd /usr/stud/srinivaa/code/new_CaDeX/CaDeX

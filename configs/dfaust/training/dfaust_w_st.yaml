@@ -35,7 +35,7 @@ model:
 dataset:
   pin_mem: true
   dataset_name: oflow_data
-  dataset_proportion: [0.4, 0.4] #  [0.1, 0.1]
+  dataset_proportion: [0.6, 0.6] #  [0.1, 0.1]
   num_workers: 1
   n_query_sample_eval: 10000
   n_training_frames: 8
@@ -89,7 +89,7 @@ training:
   batch_size: 4 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
-  eval_every_epoch: 10
+  eval_every_epoch: 5
   iou_threshold: 0.3
   batch_size: 4
   project_to_final_mesh: false

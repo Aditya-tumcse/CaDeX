@@ -35,7 +35,7 @@ model:
 dataset:
   pin_mem: true
   dataset_name: oflow_data
-  dataset_proportion: [0.6, 0.6] #  [0.1, 0.1]
+  dataset_proportion: [1.0, 1.0] #  [0.1, 0.1]
   num_workers: 1
   n_query_sample_eval: 10000
   n_training_frames: 8

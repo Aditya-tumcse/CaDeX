@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:2,VRAM:48GB
-#SBATCH --mem=256GB
+#SBATCH --mem=128GB
 #SBATCH --time=240:00:00
 #SBATCH --exclude=node17
 

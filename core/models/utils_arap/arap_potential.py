@@ -7,7 +7,7 @@ import torch.nn.functional
 from core.models.utils_arap.base_tools import *
 import time
 
-
+torch.backends.cuda.preferred_linalg_library("cusolver") 
 def arap_exact(vert_diff_cdc, vert_diff_query, neigh, n_vert):
     S_neigh = torch.bmm(vert_diff_cdc.unsqueeze(2),vert_diff_query.unsqueeze(1))
     

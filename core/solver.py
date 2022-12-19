@@ -118,8 +118,9 @@ class Solver(object):
                 batch_total_num = len(self.dataloader_dict[mode]) #Length of dataloader --> Number of batches in an epoch
                 self.batch_in_epoch_count = 0
 
-                
+                #print("Shape of dataloader:", self.dataloader_dict[mode].shape)
                 for batch in iter(self.dataloader_dict[mode]):
+                   
                     self.batch_in_epoch_count += 1
                     self.batch_count += 1
                     

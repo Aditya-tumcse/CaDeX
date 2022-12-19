@@ -1238,3 +1238,192 @@ Log dir confirmed...
   'loss_deform': 0.2969779968261719,
   'loss_recon': 0.01909029111266136}
 | CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:45 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:51 | train | Epoch 1/100 | Steps 636/9324 | Time 15.488min/227.055min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:51 | Metric:
+{ 'batch_loss': 0.35838884115219116,
+  'loss_corr': 0.05381803214550018,
+  'loss_deform': 0.2872830033302307,
+  'loss_recon': 0.017287788912653923}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:51 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:56 | train | Epoch 1/100 | Steps 640/9324 | Time 15.585min/227.060min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:56 | Metric:
+{ 'batch_loss': 0.3555443584918976,
+  'loss_corr': 0.06798601150512695,
+  'loss_deform': 0.2704811096191406,
+  'loss_recon': 0.01707722246646881}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:56:56 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:02 | train | Epoch 1/100 | Steps 644/9324 | Time 15.681min/227.028min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:02 | Metric:
+{ 'batch_loss': 0.3037729859352112,
+  'loss_corr': 0.021787773817777634,
+  'loss_deform': 0.26639991998672485,
+  'loss_recon': 0.015585274435579777}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:02 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:08 | train | Epoch 1/100 | Steps 648/9324 | Time 15.775min/226.991min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:08 | Metric:
+{ 'batch_loss': 0.4120749831199646,
+  'loss_corr': 0.03469923883676529,
+  'loss_deform': 0.3468173146247864,
+  'loss_recon': 0.03055846132338047}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:08 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:13 | train | Epoch 1/100 | Steps 652/9324 | Time 15.871min/226.959min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:13 | Metric:
+{ 'batch_loss': 0.4849373400211334,
+  'loss_corr': 0.07378414273262024,
+  'loss_deform': 0.38999229669570923,
+  'loss_recon': 0.021160893142223358}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:13 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:19 | train | Epoch 1/100 | Steps 656/9324 | Time 15.968min/226.964min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:19 | Metric:
+{ 'batch_loss': 0.42917734384536743,
+  'loss_corr': 0.06384723633527756,
+  'loss_deform': 0.34591174125671387,
+  'loss_recon': 0.019418397918343544}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:19 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:26 | train | Epoch 1/100 | Steps 660/9324 | Time 16.086min/227.246min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:26 | Metric:
+{ 'batch_loss': 0.3755608797073364,
+  'loss_corr': 0.05880769342184067,
+  'loss_deform': 0.29354870319366455,
+  'loss_recon': 0.023204464465379715}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:26 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:32 | train | Epoch 1/100 | Steps 664/9324 | Time 16.180min/227.205min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:32 | Metric:
+{ 'batch_loss': 0.37171071767807007,
+  'loss_corr': 0.04439891129732132,
+  'loss_deform': 0.3023281991481781,
+  'loss_recon': 0.02498359978199005}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:32 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:38 | train | Epoch 1/100 | Steps 668/9324 | Time 16.275min/227.165min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:38 | Metric:
+{ 'batch_loss': 0.3621428608894348,
+  'loss_corr': 0.038664720952510834,
+  'loss_deform': 0.30285370349884033,
+  'loss_recon': 0.020624449476599693}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:38 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:44 | train | Epoch 1/100 | Steps 672/9324 | Time 16.372min/227.167min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:44 | Metric:
+{ 'batch_loss': 0.4256766438484192,
+  'loss_corr': 0.0488976389169693,
+  'loss_deform': 0.35040056705474854,
+  'loss_recon': 0.02637845277786255}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:44 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:49 | train | Epoch 1/100 | Steps 676/9324 | Time 16.467min/227.125min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:49 | Metric:
+{ 'batch_loss': 0.4776398837566376,
+  'loss_corr': 0.07902632653713226,
+  'loss_deform': 0.3784326910972595,
+  'loss_recon': 0.020180871710181236}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:49 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:55 | train | Epoch 1/100 | Steps 680/9324 | Time 16.561min/227.081min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:55 | Metric:
+{ 'batch_loss': 0.313265323638916,
+  'loss_corr': 0.03566746786236763,
+  'loss_deform': 0.260452538728714,
+  'loss_recon': 0.01714530773460865}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:57:55 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:01 | train | Epoch 1/100 | Steps 684/9324 | Time 16.656min/227.050min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:01 | Metric:
+{ 'batch_loss': 0.3664984703063965,
+  'loss_corr': 0.07329992949962616,
+  'loss_deform': 0.2723276615142822,
+  'loss_recon': 0.020870884880423546}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:01 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:07 | train | Epoch 1/100 | Steps 688/9324 | Time 16.755min/227.065min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:07 | Metric:
+{ 'batch_loss': 0.39377495646476746,
+  'loss_corr': 0.05061234533786774,
+  'loss_deform': 0.317028284072876,
+  'loss_recon': 0.026134319603443146}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:07 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:14 | train | Epoch 1/100 | Steps 692/9324 | Time 16.875min/227.367min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:14 | Metric:
+{ 'batch_loss': 0.40431684255599976,
+  'loss_corr': 0.06863081455230713,
+  'loss_deform': 0.308276891708374,
+  'loss_recon': 0.027409156784415245}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:14 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:19 | train | Epoch 1/100 | Steps 696/9324 | Time 16.969min/227.331min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:19 | Metric:
+{ 'batch_loss': 0.5063030123710632,
+  'loss_corr': 0.10124169290065765,
+  'loss_deform': 0.3838237226009369,
+  'loss_recon': 0.021237578243017197}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:19 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:25 | train | Epoch 1/100 | Steps 700/9324 | Time 17.064min/227.296min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:25 | Metric:
+{ 'batch_loss': 0.4162794053554535,
+  'loss_corr': 0.058962006121873856,
+  'loss_deform': 0.3386904001235962,
+  'loss_recon': 0.018626995384693146}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:25 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:31 | train | Epoch 1/100 | Steps 704/9324 | Time 17.162min/227.305min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:31 | Metric:
+{ 'batch_loss': 0.4472494423389435,
+  'loss_corr': 0.09941131621599197,
+  'loss_deform': 0.3259331285953522,
+  'loss_recon': 0.021904993802309036}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:31 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:37 | train | Epoch 1/100 | Steps 708/9324 | Time 17.258min/227.277min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:37 | Metric:
+{ 'batch_loss': 0.4690926671028137,
+  'loss_corr': 0.11796224117279053,
+  'loss_deform': 0.3269643187522888,
+  'loss_recon': 0.02416609600186348}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:37 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:42 | train | Epoch 1/100 | Steps 712/9324 | Time 17.353min/227.240min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:42 | Metric:
+{ 'batch_loss': 0.4172944724559784,
+  'loss_corr': 0.05497123301029205,
+  'loss_deform': 0.34000277519226074,
+  'loss_recon': 0.022320466116070747}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:42 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:48 | train | Epoch 1/100 | Steps 716/9324 | Time 17.447min/227.200min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:48 | Metric:
+{ 'batch_loss': 0.3509342670440674,
+  'loss_corr': 0.03999495506286621,
+  'loss_deform': 0.290906697511673,
+  'loss_recon': 0.02003261260688305}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:48 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:54 | train | Epoch 1/100 | Steps 720/9324 | Time 17.545min/227.208min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:54 | Metric:
+{ 'batch_loss': 0.42971932888031006,
+  'loss_corr': 0.048143208026885986,
+  'loss_deform': 0.36410918831825256,
+  'loss_recon': 0.017466951161623}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:58:54 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:00 | train | Epoch 1/100 | Steps 724/9324 | Time 17.640min/227.170min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:00 | Metric:
+{ 'batch_loss': 0.36100924015045166,
+  'loss_corr': 0.05459792912006378,
+  'loss_deform': 0.2896752953529358,
+  'loss_recon': 0.016736004501581192}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:00 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:07 | train | Epoch 1/100 | Steps 728/9324 | Time 17.760min/227.461min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:07 | Metric:
+{ 'batch_loss': 0.38821643590927124,
+  'loss_corr': 0.042137615382671356,
+  'loss_deform': 0.3258475661277771,
+  'loss_recon': 0.020231259986758232}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:07 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:13 | train | Epoch 1/100 | Steps 732/9324 | Time 17.854min/227.424min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:13 | Metric:
+{ 'batch_loss': 0.37888088822364807,
+  'loss_corr': 0.05511118471622467,
+  'loss_deform': 0.30457043647766113,
+  'loss_recon': 0.01919926516711712}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:13 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:18 | train | Epoch 1/100 | Steps 736/9324 | Time 17.952min/227.425min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:18 | Metric:
+{ 'batch_loss': 0.40341460704803467,
+  'loss_corr': 0.0723513811826706,
+  'loss_deform': 0.31545400619506836,
+  'loss_recon': 0.01560923457145691}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:18 | ................................................................................
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:24 | train | Epoch 1/100 | Steps 740/9324 | Time 18.047min/227.390min 
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:24 | Metric:
+{ 'batch_loss': 0.309823602437973,
+  'loss_corr': 0.031273435801267624,
+  'loss_deform': 0.2620363235473633,
+  'loss_recon': 0.01651386171579361}
+| CaDeX-ST-DFAU | INFO | 2022Dec19-17:59:24 | ................................................................................

@@ -109,9 +109,10 @@ class HumansDataset(data.Dataset):
 
         _prepare_t = time.time() - _start_t
         data = {}
-
+       
         debug_info = ""
         for field_name, field in self.fields.items():
+          
             _f_start_t = time.time()
             try:
                 field_data = field.load(model_path, idx, c_idx, start_idx)
@@ -164,7 +165,7 @@ class HumansDataset(data.Dataset):
         models_seq_len = []
         for m in models:
             _sublist = [
-                f for f in os.listdir(os.path.join(subpath, m, ex_folder_name)) if "_" not in f
+                f for f in os.listdir(os.path.join(subpath, m, ex_folder_name)) #if "_" not in f
             ]
             models_seq_len.append(len(_sublist))
         # models_seq_len = [len(os.listdir(os.path.join(subpath, m, ex_folder_name))) for m in models]

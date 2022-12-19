@@ -1,4 +1,4 @@
-# from https://github.com/autonomousvision/occupancy_flow
+ # from https://github.com/autonomousvision/occupancy_flow
 from torchvision import transforms
 import dataset.oflow_dataset as oflow_dataset
 from torch.utils.data import Dataset
@@ -102,6 +102,7 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
     split = splits[mode]
     # Create dataset
     if dataset_type == "Humans":
+    #if dataset_type == "animals":
         # Dataset fields
         # Method specific fields (usually correspond to output)
         fields = get_data_fields(mode, cfg) #fields = {'points':,'points_t':,'pointcloud':,'oflow_idx':}

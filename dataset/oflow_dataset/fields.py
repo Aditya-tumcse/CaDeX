@@ -158,6 +158,7 @@ class PointsSubseqField(Field):
             for f in os.listdir(folder)
             if f.endswith(".npz") and "_" not in f
         ]
+      
         files.sort()
         files = files[start_idx : start_idx + self.seq_len]
         # required_files = []
@@ -191,6 +192,7 @@ class PointsSubseqField(Field):
             points = points.astype(np.float32)
             occupancies = points_dict["occupancies"]
             if self.unpackbits:
+                
                 occupancies = np.unpackbits(occupancies)[: points.shape[0]]
             occupancies = occupancies.astype(np.float32)
             loc = points_dict["loc"].astype(np.float32)
@@ -228,11 +230,13 @@ class PointsSubseqField(Field):
         random_idx = np.sort(random_idx)
         for i in random_idx.tolist():
             f = files[i]
+            
             # points_dict = np.load(f)
             points_dict = self.load_np(f)
-
+            
             # Load points
             points = points_dict["points"]
+           
             if points.dtype == np.float16:
                 # break symmetry (nec. for some version?)
                 points = points.astype(np.float32)
@@ -244,23 +248,24 @@ class PointsSubseqField(Field):
             occupancies = occupancies.astype(np.float32)
             loc = points_dict["loc"].astype(np.float32)
             scale = points_dict["scale"].astype(np.float32)
-            # Transform to loc0, scale0
+            #Transform to loc0, scale0
             points = (loc + scale * points - loc0) / scale0
             if len(files) != 1:
                 time = np.array(i / (self.seq_len - 1), dtype=np.float32)
             else:
                 time = np.array(1)
-
+           
             p_list.append(points)
             o_list.append(occupancies)
             t_list.append(time)
 
+        
         data = {
             None: np.stack(p_list),
             "occ": np.stack(o_list),
             "time": np.stack(t_list),
         }
-
+     
         return data
 
     def load_single_step(self, files, points_dict, loc0, scale0):
@@ -323,14 +328,16 @@ class PointsSubseqField(Field):
         # Load loc and scale from t_0
         # points_dict = np.load(files[0])
         points_dict_0 = self.load_np(files[0])
-        
+      
         loc0 = points_dict_0["loc"].astype(np.float32)
         scale0 = points_dict_0["scale"].astype(np.float32)
         
         if self.all_steps:
             data = self.load_all_steps(files, points_dict_0, loc0, scale0)
         elif self.sample_nframes > 0:
+           
             data = self.load_frame_steps(files, points_dict_0, loc0, scale0)
+           
         else:
             data = self.load_single_step(files, points_dict_0, loc0, scale0)
 
@@ -702,6 +709,7 @@ class MeshField(Field):
         mesh_files = glob.glob(os.path.join(folder, "*.%s" % self.file_ext))
         mesh_files.sort()
         mesh_files = mesh_files[start_idx : start_idx + self.seq_len]
+        
         # required_mesh_files = []
         # for i in file_idx:
         #     required_mesh_files.append(mesh_files[i])
@@ -717,11 +725,13 @@ class MeshField(Field):
             loc = data["loc"]
             scale = data["scale"]
             vertices = (loc + scale * data['points'] - loc0)/scale0
+            vertices = data['points']
             triangles = data['triangles']
             
             mesh_vertices_seq.append(vertices)
             mesh_face_seq.append(triangles)
 
+       
         data = {
             "vertices": np.stack(mesh_vertices_seq),
             "triangles": np.stack(mesh_face_seq),
@@ -776,7 +786,7 @@ class PointCloudField(Field):
             loc = data["loc"]
             scale = data["scale"]
             vertices = (loc + scale * data['points'] - loc0)/scale0
-
+            vertices = data['points']
             mesh_vertices_seq.append(vertices)
             
 

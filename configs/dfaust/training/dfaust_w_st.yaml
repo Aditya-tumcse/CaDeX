@@ -35,7 +35,7 @@ model:
 dataset:
   pin_mem: true
   dataset_name: oflow_data
-  dataset_proportion: [0.3, 0.3] #  [0.1, 0.1]
+  dataset_proportion: [0.5, 0.5] #  [0.1, 0.1]
   num_workers: 2
   n_query_sample_eval: 10000
   n_training_frames: 8
@@ -95,7 +95,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_mds_arap_test
+  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_mds_arap
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

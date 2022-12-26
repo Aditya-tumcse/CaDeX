@@ -4,8 +4,8 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:2,VRAM:48GB
-#SBATCH --mem=128GB
-#SBATCH --time=12:00:00
+#SBATCH --mem=150GB
+#SBATCH --time=335:00:00
 
 module load cuda/11.0
 cd /usr/stud/srinivaa/code/new_CaDeX/CaDeX

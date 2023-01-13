@@ -35,8 +35,8 @@ model:
 dataset:
   pin_mem: False
   dataset_name: oflow_data
-  dataset_proportion: [1.0, 1.0] #  [0.1, 0.1]
-  num_workers: 20
+  dataset_proportion: [0.5, 0.5] #  [0.1, 0.1]
+  num_workers: 2
   n_query_sample_eval: 10000
   n_training_frames: 8
   oflow_config:
@@ -46,7 +46,7 @@ dataset:
 
     # path: resource/data/Humans_multi
     # path: /tmp/leijh/Humans_multi
-    path: resource/data/Humans
+    path: /usr/data/cvpr_shared/marvin/Data/CaDeX/data/Humans
 
     dataset: Humans
     input_type: pcl_seq
@@ -84,17 +84,17 @@ training:
       decay_factor: [0.3, 0.3, 0.3]
       lr_min: 0.00000001
 
-  total_epoch: 200000
-  batch_size: 12 # for 2x2080ti, but we use bs=20 for 2x v100
+  total_epoch: 100
+  batch_size: 4 # for 2x2080ti, but we use bs=20 for 2x v100
 
 evaluation:
-  eval_every_epoch: 3
+  eval_every_epoch: 2
   iou_threshold: 0.3
   batch_size: 4
   project_to_final_mesh: false
 
 logging:
-  log_dir: cadex_dfaust_w_st
+  log_dir: /home/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_default
   loggers: ["mesh", "image", "hist", "video", "xls"]
   viz_training_batch_interval: 800 # 20
   viz_nontrain_batch_interval: 50

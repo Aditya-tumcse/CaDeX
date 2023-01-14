@@ -28,4 +28,5 @@ logger = Logger(cfg)
 
 runner = runner_dict[cfg["runner"].lower()](cfg, model, datasets_dict, logger)
 
-runner.run()
+#runner.run()
+runner.resume()

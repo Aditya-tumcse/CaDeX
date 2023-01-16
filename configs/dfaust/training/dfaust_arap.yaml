@@ -2,6 +2,7 @@ method: CaDeX-ST-DFAU
 gpu: 0,1
 modes: ["train", "val"]
 
+
 model:
   model_name: cadex_dfaust
 
@@ -35,7 +36,7 @@ model:
 dataset:
   pin_mem: true
   dataset_name: oflow_data
-  dataset_proportion: [0.8, 0.8] #  [0.1, 0.1]
+  dataset_proportion: [0.5, 0.5] #  [0.1, 0.1]
   num_workers: 1
   n_query_sample_eval: 10000
   n_training_frames: 8
@@ -95,9 +96,7 @@ evaluation:
   project_to_final_mesh: false
 
 logging:
-  log_dir: /usr/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_arap_new
-  loggers: ["mesh", "image", "hist", "video", "xls"]
-  viz_training_batch_interval: 800 # 20
+  log_dir: /home/stud/srinivaa/storage/slurm/cadex/log/cadex_dfaust_w_st_arap_new_1
   viz_nontrain_batch_interval: 50
   viz_epoch_interval: 1
   checkpoint_epoch: 20
@@ -110,3 +109,5 @@ generation:
   occ_if_meshing_cfg:
     batch_pts: 8000
     simplify_nfaces: 5000
+
+

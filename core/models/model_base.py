@@ -3,6 +3,7 @@ import torch
 import copy
 import logging
 import numpy as np
+from collections import OrderedDict
 
 
 class ModelBase(object):
@@ -175,9 +176,11 @@ class ModelBase(object):
         # reprocess to fit the old version
         state_dict = {}
         logging.info("Load from ep {}".format(checkpoint["epoch"]))
+        state_dict = OrderedDict()
         for k, v in checkpoint["model_state_dict"].items():
             if k.startswith("module."):
-                name = ".".join(k.split(".")[1:])
+                #name = ".".join(k.split(".")[1:])
+                name = k.replace('features.module.', 'module.features.')
             else:
                 name = k
             state_dict[name] = v
